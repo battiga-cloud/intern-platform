@@ -1,16 +1,74 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
-		{
-			"path": "pages/index/index",
-			"style": {
-				"navigationBarTitleText": "uni-app"
-			}
-		}
-	],
-	"globalStyle": {
-		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8"
-	}
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": { "navigationBarTitleText": "首页" }
+    },
+    {
+      "path": "pages/jobs/index",
+      "style": { "navigationBarTitleText": "找实习" }
+    },
+    {
+      "path": "pages/square/index",
+      "style": {
+        "navigationBarTitleText": "厂友圈",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/task/index",
+      "style": { "navigationBarTitleText": "校园任务" }
+    },
+    {
+      "path": "pages/my/index",
+      "style": {
+        "navigationBarTitleText": "我的",
+        "navigationBarBackgroundColor": "#f8f8f8"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "实习平台",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f8f8f8"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#007AFF",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "static/imgs/tabs/tab1.png",
+        "selectedIconPath": "static/imgs/tabs/tab1-a.png"
+      },
+      {
+        "pagePath": "pages/jobs/index",
+        "text": "找实习",
+        "iconPath": "static/imgs/tabs/tab2.png",
+        "selectedIconPath": "static/imgs/tabs/tab2-a.png"
+      },
+      {
+        "pagePath": "pages/square/index",
+        "text": "广场",
+        "iconPath": "static/imgs/tabs/tab3.png",
+        "selectedIconPath": "static/imgs/tabs/tab3-a.png"
+      },
+      {
+        "pagePath": "pages/task/index",
+        "text": "打卡",
+        "iconPath": "static/imgs/tabs/tab4.png",
+        "selectedIconPath": "static/imgs/tabs/tab4-a.png"
+      },
+      {
+        "pagePath": "pages/my/index",
+        "text": "我的",
+        "iconPath": "static/imgs/tabs/tab5.png",
+        "selectedIconPath": "static/imgs/tabs/tab5-a.png"
+      }
+    ]
+  }
 }
