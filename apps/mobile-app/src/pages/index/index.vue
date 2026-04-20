@@ -199,8 +199,12 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { doSignIn } from '@/api/attendance';
 
-const moodText = ref('')
+const moodText = ref('');
+const blindBoxMessage = ref('');
+
+
 
 // 模拟 2026年4月 的核心日历数据 (仅截取部分做演示)
 const calendarDays = ref([
@@ -226,23 +230,28 @@ const selectDate = (day: any) => {
   selectedDate.value = day.date
 }
 
-// 模拟签到动作
-const handleSignIn = () => {
-  uni.showLoading({ title: '签到中...' })
-  setTimeout(() => {
-    uni.hideLoading()
-    uni.showToast({ title: '签到成功！', icon: 'success' })
-    // 更新本地状态
-    const today = calendarDays.value.find(d => d.isToday)
-    if (today) {
-      today.status = 'signed'
-      today.signTime = '08:15'
-      today.location = '某某精密制造厂第一车间'
-      today.mood = moodText.value || '开启元气满满的一天！'
-      today.blindBox = '签到成就 +1，获得神秘碎片。'
-    }
-  }, 600)
-}
+const handleSignIn = async () => {
+  try {
+    // 直接调用封装好的 API，无需再手写 uni.request 和 header 配置
+    // 如果 token 过期，底层会自动拦截、报错并跳转登录页，下方代码不会执行
+    const res = await doSignIn({
+      location: '某某精密制造厂第一车间',
+      mood: moodText.value
+    });
+    
+    // 因为底层有泛型支持，编辑器这里会有很好的代码提示
+    blindBoxMessage.value = res.data.blindBox;
+    
+    uni.showToast({ title: '签到成功！', icon: 'success' });
+    
+    // ... 更新页面的签到状态展示逻辑
+    
+  } catch (error) {
+    // 错误已经被底层统一拦截处理过 Toast 了
+    // 这里只需处理页面特定的 UI 重置逻辑即可
+    console.error('签到失败:', error);
+  }
+};
 </script>
 
 <style scoped>
