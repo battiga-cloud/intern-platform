@@ -21,7 +21,7 @@
 </script>
 
 <style scoped>
-.container { background: #f8f8f8; min-height: 100vh; }
+.container { background: #f8f8f8; }
 .header { display: flex; align-items: center; padding: 60rpx 40rpx; background: #fff; margin-bottom: 20rpx; }
 .avatar { width: 120rpx; height: 120rpx; background: #ccc; border-radius: 50%; margin-right: 30rpx; }
 .name { font-size: 36rpx; font-weight: bold; display: block; margin-bottom: 10rpx; }

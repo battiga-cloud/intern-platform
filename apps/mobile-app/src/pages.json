@@ -8,14 +8,16 @@
       "path": "pages/square/index",
       "style": {
         "navigationBarTitleText": "厂友圈",
-        "enablePullDownRefresh": true
+        "enablePullDownRefresh": true,
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/my/index",
       "style": {
         "navigationBarTitleText": "我的",
-        "navigationBarBackgroundColor": "#f8f8f8"
+        "navigationBarBackgroundColor": "#f8f8f8",
+        "navigationStyle": "custom"
       }
     }
   ],
