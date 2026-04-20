@@ -7,4 +7,13 @@ export default defineConfig({
     uni(),
     UnoCSS(), // 引入 UnoCSS
   ],
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: "modern-compiler", // or 'modern'
+        silenceDeprecations: ['legacy-js-api', 'import', 'color-functions', 'global-builtin', 'if-function'],
+        javascriptEnabled: true,
+      },
+    },
+  },
 });

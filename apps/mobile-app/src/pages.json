@@ -5,19 +5,11 @@
       "style": { "navigationBarTitleText": "首页" }
     },
     {
-      "path": "pages/jobs/index",
-      "style": { "navigationBarTitleText": "找实习" }
-    },
-    {
       "path": "pages/square/index",
       "style": {
         "navigationBarTitleText": "厂友圈",
         "enablePullDownRefresh": true
       }
-    },
-    {
-      "path": "pages/task/index",
-      "style": { "navigationBarTitleText": "校园任务" }
     },
     {
       "path": "pages/my/index",
@@ -46,22 +38,10 @@
         "selectedIconPath": "static/imgs/tabs/tab1-a.png"
       },
       {
-        "pagePath": "pages/jobs/index",
-        "text": "找实习",
-        "iconPath": "static/imgs/tabs/tab2.png",
-        "selectedIconPath": "static/imgs/tabs/tab2-a.png"
-      },
-      {
         "pagePath": "pages/square/index",
         "text": "广场",
         "iconPath": "static/imgs/tabs/tab3.png",
         "selectedIconPath": "static/imgs/tabs/tab3-a.png"
-      },
-      {
-        "pagePath": "pages/task/index",
-        "text": "打卡",
-        "iconPath": "static/imgs/tabs/tab4.png",
-        "selectedIconPath": "static/imgs/tabs/tab4-a.png"
       },
       {
         "pagePath": "pages/my/index",
@@ -70,5 +50,11 @@
         "selectedIconPath": "static/imgs/tabs/tab5-a.png"
       }
     ]
+  },
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^wd-(.*)": "wot-design-uni/components/wd-$1/wd-$1.vue"
+    }
   }
 }
