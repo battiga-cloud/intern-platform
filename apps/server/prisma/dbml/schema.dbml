@@ -1,0 +1,86 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table User {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  phone String [unique, not null]
+  password String [not null]
+  name String
+  status UserStatus [not null, default: 'ACTIVE']
+  role Role [not null, default: 'USER']
+  memberships ClassMember [not null]
+  posts Post [not null]
+  attendances Attendance [not null]
+}
+
+Table Class {
+  id String [pk]
+  name String [not null]
+  members ClassMember [not null]
+}
+
+Table ClassMember {
+  id String [pk]
+  userId String [not null]
+  classId String [not null]
+  role String [not null, default: 'STUDENT']
+  status String [not null, default: 'ACTIVE']
+  joinedAt DateTime [default: `now()`, not null]
+  user User [not null]
+  class Class [not null]
+
+  indexes {
+    (userId, classId) [unique]
+  }
+}
+
+Table Attendance {
+  id String [pk]
+  userId String [not null]
+  user User [not null]
+  signDate String [not null]
+  signTime DateTime [default: `now()`, not null]
+  location String [not null]
+  mood String
+  blindBox String
+
+  indexes {
+    (userId, signDate) [unique]
+  }
+}
+
+Table Post {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  published Boolean [not null]
+  title String [not null]
+  content String
+  author User
+  authorId String
+}
+
+Enum Role {
+  ADMIN
+  PLATFORM_ADMIN
+  SCHOOL_ADMIN
+  COMPANY_ADMIN
+  USER
+}
+
+Enum UserStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+}
+
+Ref: ClassMember.userId > User.id
+
+Ref: ClassMember.classId > Class.id
+
+Ref: Attendance.userId > User.id
+
+Ref: Post.authorId > User.id

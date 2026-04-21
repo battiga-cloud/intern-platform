@@ -1,207 +1,112 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// User - status
-enum Status {
-  ACTIVE
-  INACTIVE
+generator client {
+  provider = "prisma-client-js"
+  // previewFeatures = []
 }
 
-// User - sex
-enum Sex {
-  FEMALE
-  MALE
+generator dbml {
+  provider = "prisma-dbml-generator"
 }
 
-// Menu - type
-enum MenuType {
-  DIRECTORY
-  MENU
-  BUTTON
+// 定义用户角色：超级管理员、平台管理员、学校管理员、企业管理员和普通用户）
+enum Role {
+  ADMIN
+  PLATFORM_ADMIN
+  SCHOOL_ADMIN
+  COMPANY_ADMIN
+  USER
 }
 
-// Log - method
-enum Method {
-  GET
-  POST
-  PUT
-  PATCH
-  DELETE
+// 定义用户状态：待激活、已激活、已禁用
+enum UserStatus {
+  PENDING   // 老师导入后，学生尚未扫码激活
+  ACTIVE    // 学生已设置密码，正式启用
+  INACTIVE  // 账号禁用
 }
 
-// 系统管理 - 角色管理
-model Role {
-  id            String          @id @default(uuid()) // 主键
-  name          String          @unique // 角色名称
-  code          String          @unique // 角色编码
-  description   String?         // 角色描述
-  sort          Int             // 排序
-  permissions   Permission[]    // 与Permission的一对多关系
-  createdAt     DateTime        @default(now()) // 创建时间
-  updatedAt     DateTime        @updatedAt // 更新时间
-  users         User[]          // 关联用户
-}
 
-// 系统管理 - 菜单管理
-model Menu {
-  id            String          @id @default(uuid()) // 主键
-  title         String          // 菜单名称
-  type          MenuType        @default(MENU) // 菜单类型
-  parentId      String?  
-  parent        Menu?           @relation(name: "MenuHierarchy", fields: [parentId], references: [id])
-  name          String?          @unique // 路由名称
-  path          String?          @unique // 路由地址
-  component     String?          // 组件路径
-  meta          Json?            // 路由元信息（JSON 对象）
-  props         Json?            // Iframe 页面参数（JSON 对象）
-  sort          Int             // 排序
-  permission    String?         @unique // 权限标识
-  permissions   Permission[]    // 与Permission的一对多关系
-  createdAt     DateTime        @default(now()) // 创建时间
-  updatedAt     DateTime        @updatedAt // 更新时间
-  children      Menu[]          @relation(name: "MenuHierarchy")
-}
-
-// 系统管理 - 权限管理
-model Permission {
-  id            String          @id @default(uuid()) // 主键
-  roleId        String          // 角色ID
-  menuId        String          // 菜单ID
-  createdAt     DateTime        @default(now()) // 创建时间
-  role          Role            @relation(fields: [roleId], references: [id]) // 与Role的关联
-  menu          Menu            @relation(fields: [menuId], references: [id]) // 与Menu的关联
-}
-
-// 智能行政 - 组织管理
-model Organization {
-  id            String          @id @default(uuid()) // 主键
-  name          String          @unique // 组织名称
-  code          String          @unique // 组织编码
-  parentId      String?  
-  parent        Organization?   @relation(name: "OrgHierarchy", fields: [parentId], references: [id])
-  users         User[]          // 关联用户
-  sort          Int             // 排序
-  description   String?         // 组织描述
-  icon          String?         // 组织图标
-  posts         Post[]          // 岗位
-  createdAt     DateTime        @default(now()) // 创建时间
-  updatedAt     DateTime        @updatedAt // 更新时间
-  children      Organization[]  @relation(name: "OrgHierarchy")
-}
-
-// 智能行政 - 岗位管理
-model Post {
-  id            String          @id @default(uuid()) // 主键
-  name          String          @unique // 岗位名称
-  orgId         String          // 关联的组织 id
-  organization  Organization    @relation(fields: [orgId], references: [id])   
-  parentId      String?    
-  parent        Post?           @relation(name: "PostHierarchy", fields: [parentId], references: [id])
-  users         User[]          // 关联用户
-  sort          Int             // 排序
-  description   String?         // 岗位描述
-  createdAt     DateTime        @default(now()) // 创建时间
-  updatedAt     DateTime        @updatedAt // 更新时间
-  children      Post[]          @relation(name: "PostHierarchy")
-}
-
-// 系统管理 - 用户管理
 model User {
-  id            String          @id @default(uuid()) // 主键
-  userName      String          @unique // 用户名
-  password      String          // 密码
-  cnName        String          // 中文名
-  email         String          @unique // 电子邮箱
-  phone         String          @unique // 手机号
-  avatar        String          // 头像
-  sex           Sex             @default(FEMALE) // 性别
-  status        Status          @default(ACTIVE) // 状态
-  sort          Int             // 排序
-  token         String?         // token
-  tags          String[]        @default([]) // 标签
-  city          String[]        @default([]) // 城市
-  address       String?         // 详细地址
-  roleId        String          // 关联的角色 id
-  role          Role            @relation(fields: [roleId], references: [id])
-  orgId         String          // 关联的组织 id
-  organization  Organization    @relation(fields: [orgId], references: [id])
-  postId        String          // 关联的岗位 id
-  post          Post            @relation(fields: [postId], references: [id])
-  logs          Log[]           // 操作日志
-  loginCount    Int             @default(0) // 登录次数
-  lastIp        String?         // 最后登录ip
-  lastLoginAt   DateTime?       // 最后登录时间
-  messages      Message[]       // 该用户发布的消息列表
-  messageReads  MessageRead[]   // 关联已读列表
-  createdAt     DateTime        @default(now()) // 创建时间
-  updatedAt     DateTime        @updatedAt // 更新时间
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  phone     String   @unique // 使用手机号作为唯一登录凭证
+  password  String
+  name      String?
+  status    UserStatus @default(ACTIVE)
+  role      Role @default(USER)
+
+  // 关联到中间表
+  memberships ClassMember[]
+
+  // email     String   @unique
+  // firstname String?
+  // lastname  String?
+  posts     Post[]
+
+  // 👇 新增这一行，表示一个用户可以有多条签到记录
+  attendances Attendance[]
 }
 
-// 系统管理 - 操作日志
-model Log {
-  id            String          @id @default(uuid()) // 主键
-  userId        String          // 关联的用户 id
-  user          User            @relation(fields: [userId], references: [id])
-  ip            String          // ip
-  action        String          // 请求地址
-  method        Method          // 请求方法
-  params        Json            // 请求参数（JSON 对象）
-  os            String          // 系统
-  browser       String          // 浏览器
-  province      String?         // 所在省份
-  city          String?         // 所在城市
-  adcode        String?         // 城市编码
-  createdAt     DateTime        @default(now()) // 创建时间
+// 班级/实习计划表
+model Class {
+  id        String   @id @default(cuid())
+  name      String   // 例如："机电3班" 或 "腾讯前端实训组"
+  // ... 其他属性
+  
+  members   ClassMember[]
 }
 
-// 智能行政 - 消息公告
-model Message {
-  id            String          @id @default(uuid()) // 主键
-  title         String          // 标题
-  content       String          // 内容
-  status        Status          @default(ACTIVE) // 状态
-  pinned        Boolean         @default(false)
-  userId        String          // 作者 id
-  user          User            @relation(fields: [userId], references: [id])
-  messageReads  MessageRead[]   // 关联已读列表
-  createdAt     DateTime        @default(now()) // 创建时间
-  updatedAt     DateTime        @updatedAt // 更新时间
+// 多对多关系中间表
+model ClassMember {
+  id        String   @id @default(cuid())
+  userId    String
+  classId   String
+  
+  // 在当前班级中的角色（比如他是机电3班的普通学生，却是实训组的小组长）
+  role      String   @default("STUDENT") 
+  // 在当前班级中的状态（正常、退出、被管理员移出）
+  status    String   @default("ACTIVE")  
+  joinedAt  DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  class     Class    @relation(fields: [classId], references: [id])
+
+  // 联合唯一索引：确保一个学生不能重复加入同一个班级两次
+  @@unique([userId, classId]) 
 }
 
-// 智能行政 - 消息公告 - 已读列表
-model MessageRead {
-  id            String          @id @default(uuid()) // 主键
-  messageId     String          // 消息 id
-  message       Message         @relation(fields: [messageId], references: [id])
-  userId        String          // 用户 id
-  user          User            @relation(fields: [userId], references: [id])
-  createdAt     DateTime        @default(now()) // 创建时间
+
+// 签到表
+model Attendance {
+  id          String   @id @default(cuid())
+  
+  // 外键关联到 User 表
+  userId      String   
+  user        User     @relation(fields: [userId], references: [id])
+  
+  signDate    String   // 签到日期，格式如 "2026-04-20"
+  signTime    DateTime @default(now()) // 精确签到时间
+  
+  location    String   // 打卡定位
+  mood        String?  // 心情备注
+  blindBox    String?  // 抽中的盲盒签语
+
+  // 联合唯一索引：保证一个用户每天只能有一条记录
+  @@unique([userId, signDate]) 
 }
 
-// 系统管理 - 国际化
-model Internalization {
-  id            String          @id @default(uuid()) // 主键
-  name          String          // 键
-  parentId      String?  
-  parent        Internalization?       @relation(name: "InternalizationHierarchy", fields: [parentId], references: [id])
-  zhCN          String?         // 中文
-  enUS          String?         // 英文
-  jaJP          String?         // 日文
-  zhTW          String?         // 繁体中文
-  createdAt     DateTime        @default(now()) // 创建时间
-  updatedAt     DateTime        @updatedAt // 更新时间
-  children      Internalization[]      @relation(name: "InternalizationHierarchy")
+model Post {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  published Boolean
+  title     String
+  content   String?
+  author    User?    @relation(fields: [authorId], references: [id])
+  authorId  String?
 }
 

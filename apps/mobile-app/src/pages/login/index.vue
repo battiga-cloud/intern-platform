@@ -1,96 +1,94 @@
 <template>
-  <view class="bg-white px-8 pt-20 font-sans">
-    
+  <view class="min-h-screen bg-white px-8 pt-20">
     <view class="mb-12">
-      <text class="block text-3xl font-bold text-gray-800 mb-2">欢迎回来</text>
-      <text class="block text-sm text-gray-400">请登录以继续您的实习记录</text>
+      <text class="block text-3xl font-bold text-gray-800 mb-2">欢迎登录</text>
+      <text class="block text-sm text-gray-400">实习宇宙平台</text>
     </view>
 
     <view class="flex flex-col gap-6 mb-10">
-      <view class="bg-gray-50 rounded-lg px-4 py-1 border border-gray-100">
-        <wd-input 
-          v-model="formData.account" 
-          placeholder="请输入账号 (学号/手机号)" 
-          clearable 
-          no-border
-          custom-class="bg-transparent"
-        />
-      </view>
-
-      <view class="bg-gray-50 rounded-lg px-4 py-1 border border-gray-100">
-        <wd-input 
-          v-model="formData.password" 
-          type="password" 
-          placeholder="请输入密码" 
-          show-password 
-          clearable 
-          no-border
-          custom-class="bg-transparent"
-        />
-      </view>
+      <wd-input 
+        v-model="form.phone" 
+        label="手机号" 
+        placeholder="请输入11位手机号" 
+        type="number"
+        :maxlength="11"
+        clearable 
+      />
+      <wd-input 
+        v-model="form.password" 
+        type="password" 
+        label="密码" 
+        placeholder="请输入登录密码" 
+        show-password 
+        clearable 
+      />
     </view>
 
-    <wd-button 
-      type="primary" 
-      block 
-      size="large" 
-      :loading="isSubmitting"
-      @click="handleLogin"
-      custom-class="rounded-full font-bold tracking-widest shadow-md shadow-blue-200"
-    >
+    <wd-button type="primary" block size="large" :loading="loading" @click="handleLogin">
       登 录
     </wd-button>
-
-    <view class="mt-8 text-center">
-      <text class="text-xs text-gray-400">遇到问题？请联系学校指导老师</text>
+    
+    <view class="mt-6 flex justify-between px-2">
+      <text class="text-sm text-gray-400">忘记密码</text>
+      <text class="text-sm text-blue-500" @click="goToRegister">去注册账号</text>
     </view>
-
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
-import { doLogin } from '@/api/auth';
+import { onLoad } from '@dcloudio/uni-app';
+import { loginApi } from '@/api/auth';
+import { useUserStore } from '@/store/useUserStore';
 
-// 表单数据
-const formData = reactive({
-  account: '',
-  password: ''
+const userStore = useUserStore();
+const loading = ref(false);
+const targetClassId = ref(''); // 用于存储扫码带过来的班级参数
+
+const form = reactive({ phone: '', password: '' });
+
+// 页面加载时，捕获从“班级页”拦截过来的参数
+onLoad((options: any) => {
+  if (options.targetClassId) {
+    targetClassId.value = options.targetClassId;
+  }
 });
 
-// 提交状态
-const isSubmitting = ref(false);
-
 const handleLogin = async () => {
-  // 1. 基础前端校验
-  if (!formData.account.trim() || !formData.password.trim()) {
-    uni.showToast({ title: '账号和密码不能为空', icon: 'none' });
+  if (!/^1[3-9]\d{9}$/.test(form.phone) || !form.password) {
+    uni.showToast({ title: '请输入正确的账号密码', icon: 'none' });
     return;
   }
 
   try {
-    isSubmitting.value = true;
+    loading.value = true;
+    const res = await loginApi(form);
     
-    // 2. 发起登录请求
-    const res = await doLogin(formData);
-    
-    // 3. 存储登录凭证
-    // 将 token 存入本地缓存，request.ts 会自动读取
-    uni.setStorageSync('access_token', res.data.access_token);
-    uni.setStorageSync('userInfo', res.data.userInfo);
+    // 1. 存储凭证
+    uni.setStorageSync('access_token', res.data.accessToken);
+    userStore.setUserInfo(res.data.user); // 触发全局状态更新
 
     uni.showToast({ title: '登录成功', icon: 'success' });
 
-    // 4. 跳转回首页 (因为首页是 TabBar 页面，必须用 switchTab)
+    // 2. 路由分发：如果有班级参数，跳回班级页去执行绑定；如果没有，回首页
     setTimeout(() => {
-      uni.switchTab({ url: '/pages/index/index' });
+      if (targetClassId.value) {
+        uni.redirectTo({ url: `/pages/class/index?classId=${targetClassId.value}` });
+      } else {
+        uni.switchTab({ url: '/pages/index/index' });
+      }
     }, 1000);
 
-  } catch (error) {
-    // 错误处理已在 request.ts 中全局拦截，这里可以不做额外提示
-    console.error('登录异常:', error);
+  } catch (err) {
+    // 拦截器处理报错
   } finally {
-    isSubmitting.value = false;
+    loading.value = false;
   }
+};
+
+const goToRegister = () => {
+  // 跳转注册页时，把班级参数也带过去，保证注册完也能跳回班级页
+  const query = targetClassId.value ? `?targetClassId=${targetClassId.value}` : '';
+  uni.navigateTo({ url: `/pages/login/register${query}` });
 };
 </script>
