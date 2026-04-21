@@ -2,15 +2,16 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
 export const useUserStore = defineStore('user', () => {
+  const authInfo = ref<API.AuthResult>();
   // 1. 用户基础信息
-  const userInfo = ref<any>(null);
+  const userInfo = ref<API.UserBasic>();
   // 2. 当前激活的组织/班级 ID (如果是散客，则为 null)
   const activeClassId = ref<string | null>(null);
 
   // 3. 计算属性：获取当前用户加入的所有班级列表
   const myClasses = computed(() => {
-    if (!userInfo.value || !userInfo.value.memberships) return [];
-    return userInfo.value.memberships
+    if (!authInfo.value || !authInfo.value?.memberships) return [];
+    return authInfo.value?.memberships
       .filter((m: any) => m.status === 'ACTIVE')
       .map((m: any) => m.class);
   });
@@ -22,8 +23,9 @@ export const useUserStore = defineStore('user', () => {
   });
 
   // Action: 登录/刷新后设置用户信息
-  const setUserInfo = (data: any) => {
-    userInfo.value = data;
+  const setUserInfo = (data: API.AuthResult) => {
+    userInfo.value = data?.user;
+    authInfo.value = data;
     // 如果没有激活的班级，且用户有班级，默认激活第一个
     if (!activeClassId.value && myClasses.value.length > 0) {
       activeClassId.value = myClasses.value[0].id;
@@ -39,7 +41,8 @@ export const useUserStore = defineStore('user', () => {
 
   // Action: 退出登录
   const logout = () => {
-    userInfo.value = null;
+    userInfo.value = undefined;
+    authInfo.value = undefined;
     activeClassId.value = null;
     uni.removeStorageSync('access_token');
     uni.reLaunch({ url: '/pages/login/index' });

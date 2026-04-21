@@ -11,7 +11,7 @@
         label="手机号" 
         placeholder="请输入11位手机号" 
         type="number"
-        :maxlength="11"
+        maxlength="11"
         clearable 
       />
       <wd-input 
@@ -19,6 +19,7 @@
         type="password" 
         label="密码" 
         placeholder="请输入登录密码" 
+        prefix-icon="lock"
         show-password 
         clearable 
       />
@@ -63,21 +64,19 @@ const handleLogin = async () => {
   try {
     loading.value = true;
     const res = await loginApi(form);
+    console.log('loginApi----', res);
     
-    // 1. 存储凭证
-    uni.setStorageSync('access_token', res.data.accessToken);
-    userStore.setUserInfo(res.data.user); // 触发全局状态更新
-
-    uni.showToast({ title: '登录成功', icon: 'success' });
-
-    // 2. 路由分发：如果有班级参数，跳回班级页去执行绑定；如果没有，回首页
     setTimeout(() => {
       if (targetClassId.value) {
         uni.redirectTo({ url: `/pages/class/index?classId=${targetClassId.value}` });
       } else {
         uni.switchTab({ url: '/pages/index/index' });
       }
-    }, 1000);
+    }, 500);
+
+    uni.setStorageSync('access_token', res.data.accessToken);
+    userStore.setUserInfo(res.data.user); // 触发全局状态更新
+    uni.showToast({ title: '登录成功', icon: 'success' });
 
   } catch (err) {
     // 拦截器处理报错

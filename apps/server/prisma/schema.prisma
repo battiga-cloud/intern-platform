@@ -12,10 +12,10 @@ generator dbml {
   provider = "prisma-dbml-generator"
 }
 
-// 定义用户角色：超级管理员、平台管理员、学校管理员、企业管理员和普通用户）
+// 定义用户角色：超级管理员、管理员(平台)、学校管理员、企业管理员和普通用户）
 enum Role {
+  SUPER_ADMIN
   ADMIN
-  PLATFORM_ADMIN
   SCHOOL_ADMIN
   COMPANY_ADMIN
   USER

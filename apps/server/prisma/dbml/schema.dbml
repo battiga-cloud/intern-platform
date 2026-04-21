@@ -64,8 +64,8 @@ Table Post {
 }
 
 Enum Role {
+  SUPER_ADMIN
   ADMIN
-  PLATFORM_ADMIN
   SCHOOL_ADMIN
   COMPANY_ADMIN
   USER

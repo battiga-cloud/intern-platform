@@ -1,11 +1,11 @@
 <template>
-  <view class="min-h-screen bg-white px-8 pt-16">
+  <view class="min-h-screen bg-white px-6 pt-16">
     <view class="mb-10">
       <text class="block text-3xl font-bold text-gray-800 mb-2">创建账号</text>
       <text class="block text-sm text-gray-400">加入实习宇宙，开启职场第一步</text>
     </view>
 
-    <view class="flex flex-col gap-5 mb-10">
+    <view class="flex flex-col gap-4 mb-10">
       <wd-input 
         v-model="form.name" 
         label="真实姓名" 
@@ -26,7 +26,6 @@
 
       <wd-input 
         v-model="form.password" 
-        type="password" 
         label="设置密码" 
         placeholder="请输入至少6位密码" 
         prefix-icon="lock"
@@ -35,7 +34,6 @@
 
       <wd-input 
         v-model="confirmPassword" 
-        type="password" 
         label="确认密码" 
         placeholder="请再次输入密码" 
         prefix-icon="lock"
@@ -51,7 +49,7 @@
       @click="handleRegister"
       custom-class="rounded-full shadow-lg shadow-blue-200"
     >
-      注 册 并 登 录
+      注册并登录
     </wd-button>
 
     <view class="mt-8 text-center">
@@ -82,7 +80,7 @@ const form = reactive({
   name: ''
 });
 
-onLoad((options) => {
+onLoad((options: any) => {
   // 如果是从班级落地页跳转过来的，会带上 targetClassId
   if (options.targetClassId) {
     targetClassId.value = options.targetClassId;
@@ -103,8 +101,8 @@ const handleRegister = async () => {
     const res = await registerApi(form);
     
     // 3. 存储 Token 和用户信息
-    uni.setStorageSync('access_token', res.data.accessToken);
-    userStore.setUserInfo(res.data.user);
+    uni.setStorageSync('access_token', res.data?.accessToken);
+    userStore.setUserInfo(res.data?.user);
 
     uni.showToast({ title: '注册成功', icon: 'success' });
 

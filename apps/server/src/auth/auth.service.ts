@@ -69,7 +69,7 @@ export class AuthService {
     const user = await this.validateUser(payload.phone, payload.password);
     
     if (!user) {
-      throw new UnauthorizedException('手机号或密码错误');
+      throw new BadRequestException('手机号或密码错误');
     }
 
     const tokens = this.generateTokens({ userId: user.id });

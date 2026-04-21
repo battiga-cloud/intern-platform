@@ -83,8 +83,8 @@ type Query {
 enum Role {
   ADMIN
   COMPANY_ADMIN
-  PLATFORM_ADMIN
   SCHOOL_ADMIN
+  SUPER_ADMIN
   USER
 }
 

@@ -1,12 +1,20 @@
 <template>
   <view class="container">
-    <view class="header" @click="handleLoginClick">
+    <view v-if="userInfo?.id" class="header" @click="handleProfile">
       <view class="avatar"></view>
       <view class="info">
         <text class="name">张同学</text>
         <text class="school">某某职业技术学院 - 机电专业</text>
       </view>
     </view>
+    <!-- 登录 -->
+    <view v-else class="header" @click="handleLoginClick">
+      <view class="avatar"></view>
+      <view class="info">
+        <text class="name">登录/注册</text>
+      </view>
+    </view>
+    
 
     <view class="menu-list">
       <view class="menu-item">我的投递记录 <text class="arrow">></text></view>
@@ -18,13 +26,19 @@
 
 <script setup lang="ts">
 import { useUserStore } from "@/store/useUserStore";
+import { computed } from "vue";
 
 // 逻辑待完善
 
 const userStore = useUserStore();
+const userInfo = computed(() => userStore.userInfo)
 
 async function getUserInfo() {
   // await userStore.getUserInfo();
+}
+
+function handleProfile() {
+  uni.navigateTo({ url: '/pages-user/settings' })
 }
 
 async function handleLoginClick() {
