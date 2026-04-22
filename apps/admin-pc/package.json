@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "admin",
   "version": "2.1.0",
   "description": "A fresh and elegant admin template, based on Vue3、Vite7、TypeScript、NaiveUI and UnoCSS. 一个基于Vue3、Vite7、TypeScript、NaiveUI and UnoCSS的清新优雅的中后台模版。",
   "keywords": [
@@ -32,7 +32,8 @@
     "cleanup": "sa cleanup",
     "commit": "sa git-commit",
     "commit:zh": "sa git-commit -l=zh-cn",
-    "dev": "vite --mode test",
+    "dev": "vite",
+    "dev:test": "vite --mode test",
     "dev:prod": "vite --mode prod",
     "fmt": "oxfmt",
     "gen-route": "sa gen-route",
