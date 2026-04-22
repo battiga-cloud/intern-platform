@@ -1,51 +1,72 @@
 import { defineUniPages } from "@uni-helper/vite-plugin-uni-pages";
 
 export default defineUniPages({
-	// 你也可以定义 pages 字段，它具有最高的优先级。
-	pages: [
-		{
-			path: "pages/index/index",
-			style: {
-				navigationBarTitleText: "首页",
-			},
-		},
-		{
-			path: "pages/mine/index",
-			style: {
-				navigationBarTitleText: "我的",
-			},
-		},
-		{
-			path: "pages/login/index",
-			style: {
-				navigationBarTitleText: "登录",
-			},
-		}
-	],
-	globalStyle: {
-		navigationBarTextStyle: "black",
-		navigationBarTitleText: "russ-uniapp",
-		navigationBarBackgroundColor: "#F8F8F8",
-		backgroundColor: "#F8F8F8",
-	},
-	tabBar: {
-		color: '#999999',
-		selectedColor: '#1a5f8e',
-		backgroundColor: '#fefefe',
-		borderStyle: 'black',
-		list: [
-		  {
-			iconPath: 'static/tabbar/tabbar_home.png',
-			selectedIconPath: 'static/tabbar/tabbar_home.png',
-			pagePath: 'pages/index/index',
-			text: '首页',
-		  },
-		  {
-			iconPath: 'static/tabbar/tabbar_mine.png',
-			selectedIconPath: 'static/tabbar/tabbar_mine.png',
-			pagePath: 'pages/mine/index',
-			text: '我的',
-		  },
-		],
-	  },
+  pages: [
+    {
+      path: "pages/index/index",
+      style: { navigationBarTitleText: "首页" },
+    },
+    {
+      path: "pages/square/index",
+      style: {
+        navigationBarTitleText: "厂友圈",
+        enablePullDownRefresh: true,
+        navigationStyle: "custom",
+      },
+    },
+    {
+      path: "pages/mine/index",
+      style: {
+        navigationBarTitleText: "我的",
+        navigationBarBackgroundColor: "#f8f8f8",
+        navigationStyle: "custom",
+      },
+    },
+    {
+      path: "pages/login/index",
+      style: {
+        navigationBarTitleText: "登录",
+        navigationStyle: "custom",
+      },
+    },
+    {
+      path: "pages/login/register",
+      style: {
+        navigationBarTitleText: "注册",
+        navigationStyle: "custom",
+      },
+    },
+  ],
+  globalStyle: {
+    navigationBarTextStyle: "black",
+    navigationBarTitleText: "实习平台",
+    navigationBarBackgroundColor: "#ffffff",
+    backgroundColor: "#f8f8f8",
+  },
+  tabBar: {
+    color: "#999999",
+    selectedColor: "#007AFF",
+    backgroundColor: "#ffffff",
+    borderStyle: "black",
+    list: [
+      {
+        pagePath: "pages/index/index",
+        text: "首页",
+        iconPath: "static/imgs/tabs/tab1.png",
+        selectedIconPath: "static/imgs/tabs/tab1-a.png",
+      },
+      {
+        pagePath: "pages/square/index",
+        text: "广场",
+        iconPath: "static/imgs/tabs/tab3.png",
+        selectedIconPath: "static/imgs/tabs/tab3-a.png",
+      },
+      {
+        pagePath: "pages/mine/index",
+        text: "我的",
+        iconPath: "static/imgs/tabs/tab5.png",
+        selectedIconPath: "static/imgs/tabs/tab5-a.png",
+      },
+    ],
+  },
 });

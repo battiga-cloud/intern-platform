@@ -665,6 +665,12 @@ importers:
       typescript:
         specifier: ^4.9.5
         version: 4.9.5
+      unocss:
+        specifier: ^66.6.8
+        version: 66.6.8(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.2)(vite@5.2.8(@types/node@25.5.0)(lightningcss@1.32.0)(sass@1.77.5)(terser@5.40.0))
+      unocss-applet:
+        specifier: ^0.12.2
+        version: 0.12.2(unocss@66.6.8(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.2)(vite@5.2.8(@types/node@25.5.0)(lightningcss@1.32.0)(sass@1.77.5)(terser@5.40.0)))
       unplugin-auto-import:
         specifier: ^0.18.6
         version: 0.18.6(@vueuse/core@14.2.1(vue@3.5.31(typescript@4.9.5)))(rollup@4.60.1)
@@ -4601,6 +4607,15 @@ packages:
     resolution: {integrity: sha512-DI9LLbWmPXjqJVwZTC84GuvSz9vzOgSUjbFrOE1y3kivttEReNVqwWM3n/kzFoNuS3KKm/DissOph4rFs912Zw==}
     peerDependencies:
       vite: ^5.0.0
+
+  '@unocss-applet/preset-applet@0.12.2':
+    resolution: {integrity: sha512-w4R4lkAUbbZ1f6SXkwhcBmGLjgMmgpKUIsWG92ojfg83+kiaX4ENS47SiadO4SOZEJssE2wflvxkjG0CfUN9rQ==}
+
+  '@unocss-applet/preset-rem-rpx@0.12.2':
+    resolution: {integrity: sha512-ccTK9EO1tma94C2ygp6bnEfA8zYpEde2ge66+4iBLs8a8mY5KK1H2/sJfd4us0TUkfqoyEzZrPJ+khUenk1aFQ==}
+
+  '@unocss-applet/transformer-attributify@0.12.2':
+    resolution: {integrity: sha512-gzjQ8Q41dBrx4sz3kcPO/IWpzRQ1GI8RK2d1ebnSkQYpy3f2S3SAGEaXObL6wkdfpF0D1PchweFx7BfZZikTdQ==}
 
   '@unocss/astro@0.58.9':
     resolution: {integrity: sha512-VWfHNC0EfawFxLfb3uI+QcMGBN+ju+BYtutzeZTjilLKj31X2UpqIh8fepixL6ljgZzB3fweqg2xtUMC0gMnoQ==}
@@ -11198,6 +11213,11 @@ packages:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
     engines: {node: '>= 10.0.0'}
 
+  unocss-applet@0.12.2:
+    resolution: {integrity: sha512-bjwXcOJBr2Z/I4EcqG82/5pDrvR7QGkBJSXSSbvey6hueh0jssPfeODXzmszQ8kMlRLDICZMKaBNq67sGAfZpg==}
+    peerDependencies:
+      unocss: '>=66.0.0'
+
   unocss@0.58.9:
     resolution: {integrity: sha512-aqANXXP0RrtN4kSaTLn/7I6wh8o45LUdVgPzGu7Fan2DfH2+wpIs6frlnlHlOymnb+52dp6kXluQinddaUKW1A==}
     engines: {node: '>=14'}
@@ -17473,6 +17493,22 @@ snapshots:
       jsonc-parser: 3.3.1
       vite: 5.2.8(@types/node@25.5.0)(lightningcss@1.32.0)(sass@1.77.5)(terser@5.40.0)
 
+  '@unocss-applet/preset-applet@0.12.2':
+    dependencies:
+      '@unocss/core': 66.6.8
+      '@unocss/preset-mini': 66.6.8
+      '@unocss/preset-wind3': 66.6.8
+      '@unocss/preset-wind4': 66.6.8
+
+  '@unocss-applet/preset-rem-rpx@0.12.2':
+    dependencies:
+      '@unocss/core': 66.6.8
+
+  '@unocss-applet/transformer-attributify@0.12.2':
+    dependencies:
+      '@unocss/core': 66.6.8
+      magic-string: 0.30.21
+
   '@unocss/astro@0.58.9(rollup@4.60.1)(vite@5.2.8(@types/node@25.5.0)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.40.0))':
     dependencies:
       '@unocss/core': 0.58.9
@@ -17744,6 +17780,19 @@ snapshots:
       vite: 5.2.8(@types/node@25.5.0)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.40.0)
     transitivePeerDependencies:
       - rollup
+
+  '@unocss/vite@66.6.8(vite@5.2.8(@types/node@25.5.0)(lightningcss@1.32.0)(sass@1.77.5)(terser@5.40.0))':
+    dependencies:
+      '@jridgewell/remapping': 2.3.5
+      '@unocss/config': 66.6.8
+      '@unocss/core': 66.6.8
+      '@unocss/inspector': 66.6.8
+      chokidar: 5.0.0
+      magic-string: 0.30.21
+      pathe: 2.0.3
+      tinyglobby: 0.2.16
+      unplugin-utils: 0.3.1
+      vite: 5.2.8(@types/node@25.5.0)(lightningcss@1.32.0)(sass@1.77.5)(terser@5.40.0)
 
   '@unocss/vite@66.6.8(vite@8.0.3(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.2)(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(sass@1.98.0)(terser@5.40.0)(tsx@4.21.0)(yaml@2.8.3))':
     dependencies:
@@ -26033,6 +26082,13 @@ snapshots:
 
   universalify@2.0.1: {}
 
+  unocss-applet@0.12.2(unocss@66.6.8(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.2)(vite@5.2.8(@types/node@25.5.0)(lightningcss@1.32.0)(sass@1.77.5)(terser@5.40.0))):
+    dependencies:
+      '@unocss-applet/preset-applet': 0.12.2
+      '@unocss-applet/preset-rem-rpx': 0.12.2
+      '@unocss-applet/transformer-attributify': 0.12.2
+      unocss: 66.6.8(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.2)(vite@5.2.8(@types/node@25.5.0)(lightningcss@1.32.0)(sass@1.77.5)(terser@5.40.0))
+
   unocss@0.58.9(postcss@8.5.9)(rollup@4.60.1)(vite@5.2.8(@types/node@25.5.0)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.40.0)):
     dependencies:
       '@unocss/astro': 0.58.9(rollup@4.60.1)(vite@5.2.8(@types/node@25.5.0)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.40.0))
@@ -26061,6 +26117,30 @@ snapshots:
       - postcss
       - rollup
       - supports-color
+
+  unocss@66.6.8(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.2)(vite@5.2.8(@types/node@25.5.0)(lightningcss@1.32.0)(sass@1.77.5)(terser@5.40.0)):
+    dependencies:
+      '@unocss/cli': 66.6.8
+      '@unocss/core': 66.6.8
+      '@unocss/preset-attributify': 66.6.8
+      '@unocss/preset-icons': 66.6.8
+      '@unocss/preset-mini': 66.6.8
+      '@unocss/preset-tagify': 66.6.8
+      '@unocss/preset-typography': 66.6.8
+      '@unocss/preset-uno': 66.6.8
+      '@unocss/preset-web-fonts': 66.6.8
+      '@unocss/preset-wind': 66.6.8
+      '@unocss/preset-wind3': 66.6.8
+      '@unocss/preset-wind4': 66.6.8
+      '@unocss/transformer-attributify-jsx': 66.6.8(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.2)
+      '@unocss/transformer-compile-class': 66.6.8
+      '@unocss/transformer-directives': 66.6.8
+      '@unocss/transformer-variant-group': 66.6.8
+      '@unocss/vite': 66.6.8(vite@5.2.8(@types/node@25.5.0)(lightningcss@1.32.0)(sass@1.77.5)(terser@5.40.0))
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
+      - vite
 
   unocss@66.6.8(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.2)(vite@8.0.3(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.2)(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(sass@1.98.0)(terser@5.40.0)(tsx@4.21.0)(yaml@2.8.3)):
     dependencies:

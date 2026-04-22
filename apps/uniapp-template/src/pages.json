@@ -8,43 +8,84 @@
 			}
 		},
 		{
+			"path": "pages/class/index",
+			"type": "page",
+			"style": {}
+		},
+		{
+			"path": "pages/jobs/index",
+			"type": "page",
+			"style": {}
+		},
+		{
 			"path": "pages/login/index",
 			"type": "page",
 			"style": {
-				"navigationBarTitleText": "登录"
+				"navigationBarTitleText": "登录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/login/register",
+			"type": "page",
+			"style": {
+				"navigationBarTitleText": "注册",
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/mine/index",
 			"type": "page",
 			"style": {
-				"navigationBarTitleText": "我的"
+				"navigationBarTitleText": "我的",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/square/index",
+			"type": "page",
+			"style": {
+				"navigationBarTitleText": "厂友圈",
+				"enablePullDownRefresh": true,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/task/index",
+			"type": "page",
+			"style": {}
 		}
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "russ-uniapp",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8"
+		"navigationBarTitleText": "实习平台",
+		"navigationBarBackgroundColor": "#ffffff",
+		"backgroundColor": "#f8f8f8"
 	},
 	"tabBar": {
 		"color": "#999999",
-		"selectedColor": "#1a5f8e",
-		"backgroundColor": "#fefefe",
+		"selectedColor": "#007AFF",
+		"backgroundColor": "#ffffff",
 		"borderStyle": "black",
 		"list": [
 			{
-				"iconPath": "static/tabbar/tabbar_home.png",
-				"selectedIconPath": "static/tabbar/tabbar_home.png",
 				"pagePath": "pages/index/index",
-				"text": "首页"
+				"text": "首页",
+				"iconPath": "static/imgs/tabs/tab1.png",
+				"selectedIconPath": "static/imgs/tabs/tab1-a.png"
 			},
 			{
-				"iconPath": "static/tabbar/tabbar_mine.png",
-				"selectedIconPath": "static/tabbar/tabbar_mine.png",
+				"pagePath": "pages/square/index",
+				"text": "广场",
+				"iconPath": "static/imgs/tabs/tab3.png",
+				"selectedIconPath": "static/imgs/tabs/tab3-a.png"
+			},
+			{
 				"pagePath": "pages/mine/index",
-				"text": "我的"
+				"text": "我的",
+				"iconPath": "static/imgs/tabs/tab5.png",
+				"selectedIconPath": "static/imgs/tabs/tab5-a.png"
 			}
 		]
 	},
