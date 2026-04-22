@@ -82,21 +82,26 @@ model ClassMember {
 
 // 签到表
 model Attendance {
-  id          String   @id @default(cuid())
+  id        String   @id @default(cuid())
+  userId    String
+  classId   String   // 所属班级/组织
   
-  // 外键关联到 User 表
-  userId      String   
-  user        User     @relation(fields: [userId], references: [id])
+  recordDate String  // 记录的日期，如 "2026-04-22"
   
-  signDate    String   // 签到日期，格式如 "2026-04-20"
-  signTime    DateTime @default(now()) // 精确签到时间
+  // 核心：记录的类型
+  status    String   @default("WORK") // "WORK" (上班), "REST" (休息), "LEAVE" (请假)
   
-  location    String   // 打卡定位
-  mood        String?  // 心情备注
-  blindBox    String?  // 抽中的盲盒签语
+  // 其他你希望保留的可选字段
+  mood      String?  // 心情盲盒（可选）
+  address   String?  // 定位（可选）
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  // 联合唯一索引：保证一个用户每天只能有一条记录
-  @@unique([userId, signDate]) 
+  user      User     @relation(fields: [userId], references: [id])
+
+  // 联合唯一索引：确保一个人在同一个班级，一天只能有一条记录（方便 upsert）
+  @@unique([userId, classId, recordDate])
 }
 
 model Post {
