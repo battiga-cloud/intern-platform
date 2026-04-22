@@ -6,6 +6,7 @@
 interface NavigateToOptions {
   url: "/pages/index/index" |
        "/pages/class/index" |
+       "/pages/index/index2" |
        "/pages/jobs/index" |
        "/pages/login/index" |
        "/pages/login/register" |

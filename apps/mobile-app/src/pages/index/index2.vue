@@ -200,7 +200,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { doSignIn } from "@/api/attendance";
+import { checkIn } from "@/api/attendance";
 
 const moodText = ref("");
 const blindBoxMessage = ref("");
@@ -251,7 +251,7 @@ const handleSignIn = async () => {
   try {
     // 直接调用封装好的 API，无需再手写 uni.request 和 header 配置
     // 如果 token 过期，底层会自动拦截、报错并跳转登录页，下方代码不会执行
-    const res = await doSignIn({
+    const res = await checkIn({
       location: "某某精密制造厂第一车间",
       mood: moodText.value,
     });
