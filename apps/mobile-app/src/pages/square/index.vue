@@ -1,5 +1,6 @@
 <template>
   <view class="bg-white font-sans relative">
+    <wd-navbar fixed placeholder title="实习圈" safeAreaInsetTop />
     <view
       class="sticky top-0 px-30rpx py-20rpx z-10 bg-white border-b border-gray-100 flex justify-between items-center"
     >

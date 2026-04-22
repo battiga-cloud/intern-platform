@@ -19,3 +19,12 @@ dist
 *.njsproj
 *.sln
 *.sw?
+.hbuilderx
+
+.stylelintcache
+.eslintcache
+pnpm-lock.yaml
+
+
+auto-import.d.ts
+components.d.ts

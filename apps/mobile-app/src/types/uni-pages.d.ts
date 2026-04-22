@@ -11,7 +11,8 @@ interface NavigateToOptions {
        "/pages/login/register" |
        "/pages/mine/index" |
        "/pages/square/index" |
-       "/pages/task/index";
+       "/pages/task/index" |
+       "/pages-user/settings";
 }
 interface RedirectToOptions extends NavigateToOptions {}
 

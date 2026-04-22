@@ -7,7 +7,18 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    Empty: typeof import('./src/components/Empty/index.vue')['default']
+    GlobalNotify: typeof import('./src/components/GlobalNotify/index.vue')['default']
     WdButton: typeof import('wot-design-uni/components/wd-button/wd-button.vue')['default']
+    WdCell: typeof import('wot-design-uni/components/wd-cell/wd-cell.vue')['default']
+    WdCellGroup: typeof import('wot-design-uni/components/wd-cell-group/wd-cell-group.vue')['default']
+    WdIcon: typeof import('wot-design-uni/components/wd-icon/wd-icon.vue')['default']
+    WdImg: typeof import('wot-design-uni/components/wd-img/wd-img.vue')['default']
+    WdInput: typeof import('wot-design-uni/components/wd-input/wd-input.vue')['default']
+    WdLoading: typeof import('wot-design-uni/components/wd-loading/wd-loading.vue')['default']
+    WdNavbar: typeof import('wot-design-uni/components/wd-navbar/wd-navbar.vue')['default']
+    WdPopup: typeof import('wot-design-uni/components/wd-popup/wd-popup.vue')['default']
+    WdTag: typeof import('wot-design-uni/components/wd-tag/wd-tag.vue')['default']
     WorkspaceSwitcher: typeof import('./src/components/workspace-switcher.vue')['default']
   }
 }

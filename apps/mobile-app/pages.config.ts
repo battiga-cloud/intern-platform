@@ -4,7 +4,10 @@ export default defineUniPages({
   pages: [
     {
       path: "pages/index/index",
-      style: { navigationBarTitleText: "首页" },
+      style: {
+        navigationBarTitleText: "首页",
+        navigationStyle: "custom",
+      },
     },
     {
       path: "pages/square/index",
@@ -35,6 +38,19 @@ export default defineUniPages({
         navigationBarTitleText: "注册",
         navigationStyle: "custom",
       },
+    },
+  ],
+  subPackages: [
+    {
+      root: "pages-user/",
+      pages: [
+        {
+          path: "settings",
+          style: {
+            navigationBarTitleText: "设置",
+          },
+        },
+      ],
     },
   ],
   globalStyle: {

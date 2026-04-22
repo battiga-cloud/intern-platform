@@ -2,12 +2,26 @@
   "extends": "@vue/tsconfig/tsconfig.json",
   "compilerOptions": {
     "sourceMap": true,
+    "noImplicitThis": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     },
+    "outDir": "dist",
     "lib": ["esnext", "dom"],
-    "types": ["@dcloudio/types", "node"]
+    "types": [
+      "@dcloudio/types",
+      "wot-design-uni/global"
+    ]
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
+  "exclude": ["node_modules"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.jsx",
+    "src/**/*.vue",
+    "src/**/*.json"
+  ]
 }

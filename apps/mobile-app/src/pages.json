@@ -1,70 +1,107 @@
 {
-  "pages": [
-    {
-      "path": "pages/index/index",
-      "style": { "navigationBarTitleText": "首页" }
-    },
-    // {
-    //   "path": "pages/square/index",
-    //   "style": {
-    //     "navigationBarTitleText": "厂友圈",
-    //     "enablePullDownRefresh": true,
-    //     "navigationStyle": "custom"
-    //   }
-    // },
-    // {
-    //   "path": "pages/my/index",
-    //   "style": {
-    //     "navigationBarTitleText": "我的",
-    //     "navigationBarBackgroundColor": "#f8f8f8",
-    //     "navigationStyle": "custom"
-    //   }
-    // },
-    // {
-    //   "path": "pages/login/index",
-    //   "style": {
-    //     "navigationBarTitleText": "登录",
-    //     "navigationStyle": "custom"
-    //   }
-    // },
-    // {
-    //   "path": "pages/login/register",
-    //   "style": {
-    //     "navigationBarTitleText": "注册",
-    //     "navigationStyle": "custom"
-    //   }
-    // }
-  ],
-  "globalStyle": {
-    "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "实习平台",
-    "navigationBarBackgroundColor": "#ffffff",
-    "backgroundColor": "#f8f8f8"
-  },
-  // "tabBar": {
-  //   "color": "#999999",
-  //   "selectedColor": "#007AFF",
-  //   "backgroundColor": "#ffffff",
-  //   "borderStyle": "black",
-  //   "list": [
-  //     {
-  //       "pagePath": "pages/index/index",
-  //       "text": "首页",
-  //       "iconPath": "static/imgs/tabs/tab1.png",
-  //       "selectedIconPath": "static/imgs/tabs/tab1-a.png"
-  //     },
-  //     {
-  //       "pagePath": "pages/square/index",
-  //       "text": "广场",
-  //       "iconPath": "static/imgs/tabs/tab3.png",
-  //       "selectedIconPath": "static/imgs/tabs/tab3-a.png"
-  //     },
-  //     {
-  //       "pagePath": "pages/my/index",
-  //       "text": "我的",
-  //       "iconPath": "static/imgs/tabs/tab5.png",
-  //       "selectedIconPath": "static/imgs/tabs/tab5-a.png"
-  //     }
-  //   ]
-  // },
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"type": "home",
+			"style": {
+				"navigationBarTitleText": "首页",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/class/index",
+			"type": "page",
+			"style": {}
+		},
+		{
+			"path": "pages/jobs/index",
+			"type": "page",
+			"style": {}
+		},
+		{
+			"path": "pages/login/index",
+			"type": "page",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/login/register",
+			"type": "page",
+			"style": {
+				"navigationBarTitleText": "注册",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/mine/index",
+			"type": "page",
+			"style": {
+				"navigationBarTitleText": "我的",
+				"navigationBarBackgroundColor": "#f8f8f8",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/square/index",
+			"type": "page",
+			"style": {
+				"navigationBarTitleText": "厂友圈",
+				"enablePullDownRefresh": true,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/task/index",
+			"type": "page",
+			"style": {}
+		}
+	],
+	"subPackages": [
+		{
+			"root": "pages-user/",
+			"pages": [
+				{
+					"path": "settings",
+					"style": {
+						"navigationBarTitleText": "设置"
+					}
+				}
+			]
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "实习平台",
+		"navigationBarBackgroundColor": "#ffffff",
+		"backgroundColor": "#f8f8f8"
+	},
+	"tabBar": {
+		"color": "#999999",
+		"selectedColor": "#007AFF",
+		"backgroundColor": "#ffffff",
+		"borderStyle": "black",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"text": "首页",
+				"iconPath": "static/imgs/tabs/tab1.png",
+				"selectedIconPath": "static/imgs/tabs/tab1-a.png"
+			},
+			{
+				"pagePath": "pages/square/index",
+				"text": "广场",
+				"iconPath": "static/imgs/tabs/tab3.png",
+				"selectedIconPath": "static/imgs/tabs/tab3-a.png"
+			},
+			{
+				"pagePath": "pages/mine/index",
+				"text": "我的",
+				"iconPath": "static/imgs/tabs/tab5.png",
+				"selectedIconPath": "static/imgs/tabs/tab5-a.png"
+			}
+		]
+	},
+	"__esModule": true
 }

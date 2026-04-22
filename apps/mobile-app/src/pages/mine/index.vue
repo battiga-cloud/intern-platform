@@ -1,5 +1,7 @@
 <template>
   <view class="container">
+    <wd-navbar fixed placeholder title="我的" safeAreaInsetTop />
+
     <view v-if="userInfo?.id" class="header" @click="handleProfile">
       <view class="avatar"></view>
       <view class="info">
@@ -14,12 +16,20 @@
         <text class="name">登录/注册</text>
       </view>
     </view>
-    
 
     <view class="menu-list">
-      <view class="menu-item">我的投递记录 <text class="arrow">></text></view>
-      <view class="menu-item">我的动态 <text class="arrow">></text></view>
-      <view class="menu-item">专属运营顾问 <text class="arrow">></text></view>
+      <view class="menu-item">
+        我的投递记录
+        <wd-icon name="arrow-right" size="24" />
+      </view>
+      <view class="menu-item">
+        我的动态
+        <wd-icon name="arrow-right" size="24" />
+      </view>
+      <view class="menu-item">
+        专属运营顾问
+        <wd-icon name="arrow-right" size="24" />
+      </view>
     </view>
   </view>
 </template>
@@ -31,14 +41,21 @@ import { computed } from "vue";
 // 逻辑待完善
 
 const userStore = useUserStore();
-const userInfo = computed(() => userStore.userInfo)
+const userInfo = computed(() => userStore.userInfo);
 
-async function getUserInfo() {
-  // await userStore.getUserInfo();
-}
+watch(
+  userInfo,
+  (v) => {
+    console.log("userInfo", v);
+    if (v?.id) {
+      // 登录成功，更新用户信息
+    }
+  },
+  { immediate: true }
+);
 
 function handleProfile() {
-  uni.navigateTo({ url: '/pages-user/settings' })
+  uni.navigateTo({ url: "/pages-user/settings" });
 }
 
 async function handleLoginClick() {

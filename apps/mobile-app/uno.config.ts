@@ -1,16 +1,36 @@
-import { defineConfig, presetUno } from "unocss";
+import type { Preset, SourceCodeTransformer } from "unocss";
+import { defineConfig, presetAttributify } from "unocss";
+
+import {
+  presetApplet,
+  presetRemRpx,
+  transformerAttributify,
+} from "unocss-applet";
+
+// uni-app
+const isApplet = process.env?.UNI_PLATFORM?.startsWith("mp-") ?? false;
+// taro
+// const isApplet = process.env.TARO_ENV !== 'h5' ?? false
+const presets: Preset[] = [];
+const transformers: SourceCodeTransformer[] = [];
+
+if (isApplet) {
+  presets.push(presetApplet());
+  presets.push(presetRemRpx());
+  transformers.push(transformerAttributify({ ignoreAttributes: ["block"] }));
+} else {
+  presets.push(presetApplet());
+  presets.push(presetAttributify());
+  presets.push(presetRemRpx({ mode: "rpx2rem" }));
+}
 
 export default defineConfig({
-  presets: [presetUno()],
-  rules: [
-    // 将 px 自动转换为 rpx，保留开发习惯
-    [/^m-(\d+)$/, ([, d]) => ({ margin: `${d}rpx` })],
-    [/^p-(\d+)$/, ([, d]) => ({ padding: `${d}rpx` })],
+  presets: [
+    // ...
+    ...presets,
   ],
-  theme: {
-    // 你可以在这里统一定义平台的主题色，比如那个 #007aff
-    colors: {
-      primary: "#007aff",
-    },
-  },
+  transformers: [
+    // ...
+    ...transformers,
+  ],
 });

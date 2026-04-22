@@ -52,7 +52,10 @@
     "mp-weixin" : {
         "appid" : "wxa9739eb584cdeafc",
         "setting" : {
-            "urlCheck" : false
+            "urlCheck" : false,
+            "es6": true,
+            "postcss": true,
+            "minified": true
         },
         "usingComponents" : true
     },
@@ -68,11 +71,5 @@
     "uniStatistics": {  
         "enable": false
     },
-    "vueVersion" : "3",
-    "h5" : {
-        "router" : {
-            "mode" : "history",
-            "base": "/"
-        }
-    }
+    "vueVersion" : "3"
 }
