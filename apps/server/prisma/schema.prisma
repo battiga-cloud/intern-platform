@@ -43,8 +43,6 @@ model User {
   memberships ClassMember[]
 
   // email     String   @unique
-  // firstname String?
-  // lastname  String?
   posts     Post[]
 
   // 👇 新增这一行，表示一个用户可以有多条签到记录
@@ -112,4 +110,3 @@ model Post {
   author    User?    @relation(fields: [authorId], references: [id])
   authorId  String?
 }
-

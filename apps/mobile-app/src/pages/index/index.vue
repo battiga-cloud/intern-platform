@@ -59,7 +59,7 @@ const calendarWeeks = computed(() => {
       date: i,
       fullDate,
       isToday: fullDate === todayStr,
-      status: attendanceRecords.value[fullDate] || 'UNSIGNED',
+      record: attendanceRecords.value[fullDate] || 'UNSIGNED',
     })
 
     // 满 7 天换行
@@ -81,9 +81,9 @@ const calendarWeeks = computed(() => {
 })
 
 // 计算当前选中日期的状态，供操作面板使用
-const selectedDayRecord = computed(() => {
+const selectedDayRecord = computed<{ record?: AttendanceRecord }>(() => {
   if (!selectedDate.value)
-    return { status: 'UNSIGNED' }
+    return { record: { status: 'UNSIGNED' } }
 
   // 从二维数组中反查当前状态 (保证双向绑定视图一致性)
   for (const week of calendarWeeks.value) {
@@ -91,7 +91,9 @@ const selectedDayRecord = computed(() => {
     if (day)
       return day
   }
-  return { status: 'UNSIGNED' }
+  return {
+    record: { status: 'UNSIGNED' },
+  }
 })
 
 const formatSelectedDateLabel = computed(() => {
@@ -150,16 +152,19 @@ function updateStatus(status: 'WORK' | 'REST' | 'LEAVE') {
     status,
   }
 
-  uni.showToast({ title: '已更新', icon: 'none' })
+  setTimeout(() => {
+    // 渐隐效果
+    uni.showToast({ title: '已更新', icon: 'none', duration: 2000 })
+  }, 600)
 };
 
 // 样式辅助函数
 function getStatusColorClass(status: string) {
   switch (status) {
-    case 'WORK': return 'bg-[#10b981] text-white' // 活力绿 (emerald-500)
-    case 'REST': return 'bg-[#f59e0b] text-white' // 阳光黄 (amber-500)
-    case 'LEAVE': return 'bg-[#ef4444] text-white' // 醒目红 (red-500)
-    default: return 'bg-gray-50 border-2 border-gray-100 text-gray-500' // 未签到 (更扁平)
+    case 'WORK': return 'bg-[#4D80F0] text-white' // 活力绿 (emerald-500)
+    case 'REST': return 'bg-[#10b981] text-white' // 阳光黄 (amber-500)
+    case 'LEAVE': return 'bg-[#fb923c] text-white' // 醒目红 (red-500)
+    default: return 'bg-gray-50 border-2 border-gray-100 text-gray-500 text-black' // 未签到 (更扁平)
   }
 };
 
@@ -275,6 +280,7 @@ async function saveQuote() {
     uni.showToast({ title: '记录成功', icon: 'success' })
   }
   catch (error) {
+    console.error('保存失败:', error)
     uni.hideLoading()
     uni.showToast({ title: '保存失败，请重试', icon: 'none' })
     // 如果失败，应该回退 isSaved 状态，这里略过复杂错误处理
@@ -316,11 +322,11 @@ async function saveQuote() {
               <template v-if="day.date">
                 <view
                   class="h-8 w-8 flex items-center justify-center rounded-full transition-all duration-200" :class="[
-                    getStatusColorClass(day.status),
+                    getStatusColorClass(day.record?.status || 'UNSIGNED'),
                     selectedDate === day.fullDate ? 'ring-4 ring-blue-100 scale-105' : '', // 修改这里
                   ]"
                 >
-                  <text class="text-sm font-medium" :class="day.status === 'UNSIGNED' ? 'text-gray-600' : 'text-white'">
+                  <text class="text-sm font-medium" :class="day.record?.status === 'UNSIGNED' ? 'text-gray-600' : ''">
                     {{ day.date }}
                   </text>
                 </view>
@@ -337,39 +343,40 @@ async function saveQuote() {
               <text class="text-sm text-gray-500">
                 {{ formatSelectedDateLabel }}
               </text>
-              <view class="flex gap-3">
-                <wd-tag
-                  :plain="selectedDayRecord.status !== 'WORK'"
-                  :type="selectedDayRecord.status === 'WORK' ? 'success' : 'default'" round
-                  @click="updateStatus('WORK')"
-                >
-                  上班
-                </wd-tag>
-                <wd-tag
-                  :plain="selectedDayRecord.status !== 'REST'"
-                  :color="selectedDayRecord.status === 'REST' ? '#f59e0b' : ''" round @click="updateStatus('REST')"
-                >
-                  休息
-                </wd-tag>
-                <wd-tag
-                  :plain="selectedDayRecord.status !== 'LEAVE'"
-                  :type="selectedDayRecord.status === 'LEAVE' ? 'danger' : 'default'" round
-                  @click="updateStatus('LEAVE')"
-                >
-                  请假
-                </wd-tag>
-              </view>
             </view>
+
+            <view class="mt-2 flex gap-3">
+              <wd-tag
+                :color="selectedDayRecord?.record?.status === 'WORK' ? '#ffffff' : ''" round size="large"
+                :bg-color="selectedDayRecord?.record?.status === 'WORK' ? '#4D80F0' : ''" @click="updateStatus('WORK')"
+              >
+                上班
+              </wd-tag>
+              <wd-tag
+                :color="selectedDayRecord?.record?.status === 'REST' ? '#ffffff' : ''" round size="large"
+                :bg-color="selectedDayRecord?.record?.status === 'REST' ? '#10b981' : ''" @click="updateStatus('REST')"
+              >
+                休息
+              </wd-tag>
+              <wd-tag
+                :color="selectedDayRecord?.record?.status === 'LEAVE' ? '#ffffff' : ''" round size="large"
+                :bg-color="selectedDayRecord?.record?.status === 'LEAVE' ? '#F59E0B' : ''"
+                @click="updateStatus('LEAVE')"
+              >
+                请假
+              </wd-tag>
+            </view>
+
             <view
-              v-if="activeWeekIndex === weekIndex && selectedDayRecord.status !== 'UNSIGNED'"
+              v-if="activeWeekIndex === weekIndex && selectedDayRecord?.record?.status !== 'UNSIGNED'"
               class="mt-2 animate-fade-in border border-blue-50 rounded-xl bg-white p-4 shadow-sm transition-all"
             >
-              <view v-if="selectedDayRecord.isSaved" class="relative rounded-lg bg-blue-50 p-3">
+              <view v-if="selectedDayRecord?.record?.isSaved" class="relative rounded-lg bg-blue-50 p-3">
                 <text class="absolute left-2 top-1 text-4xl text-blue-200 leading-none font-serif">
                   "
                 </text>
                 <text class="relative z-10 ml-4 mt-2 block text-sm text-gray-700">
-                  {{ selectedDayRecord.quote }}
+                  {{ selectedDayRecord?.record?.quote || '' }}
                 </text>
                 <view class="mt-2 flex justify-end">
                   <view class="flex items-center text-xs text-blue-500" @click="editQuote">
@@ -390,7 +397,7 @@ async function saveQuote() {
 
                 <wd-textarea
                   v-model="currentEditingQuote" placeholder="写下今天的实习心情..." :maxlength="100" show-word-limit
-                  custom-class="bg-gray-100 rounded-lg border-0 p-2 text-sm mt-2"
+                  custom-class="bg-gray-100 rounded-lg border-0 p-2 text-sm"
                 />
 
                 <view class="mt-3 flex justify-end">
@@ -406,25 +413,25 @@ async function saveQuote() {
 
       <view class="mt-6 flex items-center justify-center gap-6 border-t border-gray-100 pt-4">
         <view class="flex items-center">
-          <view class="mr-1.5 h-3 w-3 rounded-full bg-[#10b981]" />
+          <view class="mr-1.5 h-3 w-3 rounded-full bg-[#4D80F0]" />
           <text class="text-xs text-gray-500">
             上班
           </text>
         </view>
         <view class="flex items-center">
-          <view class="mr-1.5 h-3 w-3 rounded-full bg-[#f59e0b]" />
+          <view class="mr-1.5 h-3 w-3 rounded-full bg-[#10b981]" />
           <text class="text-xs text-gray-500">
             休息
           </text>
         </view>
         <view class="flex items-center">
-          <view class="mr-1.5 h-3 w-3 rounded-full bg-[#ef4444]" />
+          <view class="mr-1.5 h-3 w-3 rounded-full bg-[#fb923c]" />
           <text class="text-xs text-gray-500">
             请假
           </text>
         </view>
         <view class="flex items-center">
-          <view class="mr-1.5 h-3 w-3 border-2 border-gray-300 rounded-full bg-gray-100" />
+          <view class="mr-1.5 h-3 w-3 border-2 border-gray-300 rounded-full bg-[#F3F4F6]" />
           <text class="text-xs text-gray-500">
             未签到
           </text>
