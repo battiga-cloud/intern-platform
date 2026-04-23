@@ -18,36 +18,36 @@ export class AttendanceService {
     const todayStr = dayjs().format('YYYY-MM-DD');
 
     // 1. 检查今日是否已签到
-    const existingRecord = await this.prisma.attendance.findUnique({
-      where: {
-        userId_signDate: { // 注意这里变成了 userId_signDate
-          userId,
-          signDate: todayStr,
-        },
-      },
-    });
+    // const existingRecord = await this.prisma.attendance.findUnique({
+    //   where: {
+    //     userId_signDate: { // 注意这里变成了 userId_signDate
+    //       userId,
+    //       signDate: todayStr,
+    //     },
+    //   },
+    // });
 
-    if (existingRecord) {
-      throw new BadRequestException('今天已经签到过了哦，明天再来吧！');
-    }
+    // if (existingRecord) {
+    //   throw new BadRequestException('今天已经签到过了哦，明天再来吧！');
+    // }
 
-    const randomIndex = Math.floor(Math.random() * this.blindBoxMessages.length);
-    const blindBoxText = this.blindBoxMessages[randomIndex];
+    // const randomIndex = Math.floor(Math.random() * this.blindBoxMessages.length);
+    // const blindBoxText = this.blindBoxMessages[randomIndex];
 
-    // 2. 写入数据库
-    const newRecord = await this.prisma.attendance.create({
-      data: {
-        userId, // 注意这里
-        signDate: todayStr,
-        location,
-        mood,
-        blindBox: blindBoxText,
-      },
-    });
+    // // 2. 写入数据库
+    // const newRecord = await this.prisma.attendance.create({
+    //   data: {
+    //     userId, // 注意这里
+    //     signDate: todayStr,
+    //     location,
+    //     mood,
+    //     blindBox: blindBoxText,
+    //   },
+    // });
 
     return {
       message: '签到成功',
-      data: newRecord
+      data: {}, // newRecord
     };
   }
 }

@@ -13,6 +13,7 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { RegisterDto, LoginDto, UpdatePasswordDto } from './dto/auth-rest.dto';
 import { User } from '../common/decorators/user.decorator'; // 假设你已定义此装饰器
+import { ResponseCode, ResponseMessage } from '../common/decorators/response.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -23,6 +24,8 @@ export class AuthController {
    * POST /auth/register
    */
   @Post('register')
+  @ResponseCode(201)
+  @ResponseMessage('账号创建成功')
   async register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
@@ -33,6 +36,7 @@ export class AuthController {
    */
   @Post('login')
   @HttpCode(HttpStatus.OK) // 登录通常返回 200 而非 201
+  @ResponseMessage('登录成功，欢迎回来！')
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }

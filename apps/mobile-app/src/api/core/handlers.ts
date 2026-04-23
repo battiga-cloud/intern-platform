@@ -26,10 +26,12 @@ export class ApiError extends Error {
 interface ApiResponse {
   code: number
   msg?: string
+  message?: string
   data?: any
-  success?: boolean
-  total?: number
-  more?: boolean
+  time?: string
+  // success?: boolean
+  // total?: number
+  // more?: boolean
 }
 
 // Handle successful responses
@@ -39,6 +41,7 @@ export async function handleAlovaResponse(
   const globalToast = useGlobalToast()
   // Extract status code and data from UniApp response
   const { statusCode, data } = response as UniNamespace.RequestSuccessCallbackResult
+  // console.log('handleAlovaResponse', response)
 
   // 处理401/403错误（如果不是在handleAlovaResponse中处理的）
   if ((statusCode === 401 || statusCode === 403)) {
@@ -54,7 +57,14 @@ export async function handleAlovaResponse(
 
   // Handle HTTP error status codes
   if (statusCode >= 400) {
-    globalToast.error(`Request failed with status: ${statusCode}`)
+    let msg = `Request failed with status: ${statusCode}`
+
+    if (Object.keys(data || {}).length) {
+      const { msg: dataMsg, message } = (data || {}) as ApiResponse
+      msg = dataMsg || message || msg
+    }
+
+    globalToast.error(msg)
     throw new ApiError(`Request failed with status: ${statusCode}`, statusCode, data)
   }
 
@@ -71,6 +81,7 @@ export async function handleAlovaResponse(
 
 // Handle request errors
 export function handleAlovaError(error: any, method: Method) {
+  // console.log('handleAlovaError', error)
   const globalToast = useGlobalToast()
   // Log error in development
   if (import.meta.env.MODE === 'development') {

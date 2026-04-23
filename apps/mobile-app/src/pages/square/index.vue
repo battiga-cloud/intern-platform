@@ -63,9 +63,9 @@ function toggleLike(post: any) {
 
 <template>
   <view class="relative bg-white font-sans">
-    <wd-navbar title="实习圈" placeholder safeareainsettop fixed />
+    <wd-navbar title="实习圈" placeholder safe-area-inset-top fixed />
     <view
-      class="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white px-30rpx py-20rpx"
+      class="sticky top-0 flex items-center justify-between border-b border-gray-100 bg-white px-30rpx py-20rpx"
     >
       <text class="text-lg text-gray-800 font-bold">
         实习圈

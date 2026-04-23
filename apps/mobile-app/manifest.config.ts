@@ -92,7 +92,7 @@ export default defineManifestConfig({
     themeLocation: 'theme.json',
     router: {
       mode: 'history',
-      base: '/scale-h5/',
+      base: '/',
     },
   },
   'uniStatistics': {

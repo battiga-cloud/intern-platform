@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onLoad } from '@dcloudio/uni-app'
+import { useRequest } from 'alova/client'
 import { reactive, ref } from 'vue'
 import { loginApi } from '@/api/auth'
 import { useUserStore } from '@/store/useUserStore'
@@ -13,10 +14,8 @@ definePage({
 })
 
 const userStore = useUserStore()
-const loading = ref(false)
 const targetClassId = ref('') // 用于存储扫码带过来的班级参数
-
-const form = reactive({ phone: '', password: '' })
+const loginForm = reactive({ phone: '', password: '' })
 
 // 页面加载时，捕获从“班级页”拦截过来的参数
 onLoad((options: any) => {
@@ -25,20 +24,17 @@ onLoad((options: any) => {
   }
 })
 
-async function handleLogin() {
-  if (!/^1[3-9]\d{9}$/.test(form.phone) || !form.password) {
-    uni.showToast({ title: '请输入正确的账号密码', icon: 'none' })
-    return
-  }
+// immediate: false 代表不立即发起请求，适用于表单提交场景
+const { loading, send: submitLogin, onSuccess } = useRequest(() => loginApi(loginForm), {
+  immediate: false,
+})
 
-  try {
-    loading.value = true
-    const res = await loginApi(form)
-    console.log('loginApi----', res)
-
-    uni.setStorageSync('access_token', res.accessToken)
-    userStore.setUserInfo(res) // 触发全局状态更新
-    uni.showToast({ title: '登录成功', icon: 'success' })
+onSuccess((event: any) => {
+  const res = event.data as API.ApiResponse<API.AuthResult>
+  if (res.code === 200) {
+    uni.setStorageSync('access_token', res.data?.accessToken || '')
+    uni.showToast({ title: '登录成功' })
+    userStore.setUserInfo(res.data!) // 触发全局状态更新
 
     setTimeout(() => {
       if (targetClassId.value) {
@@ -47,14 +43,21 @@ async function handleLogin() {
       else {
         uni.switchTab({ url: '/pages/index/index' })
       }
-    }, 500)
+    }, 800)
   }
-  catch (err) {
-    // 拦截器处理报错
+})
+
+function handleLogin() {
+  const phoneReg = /^1[3-9]\d{9}$/
+  if (!phoneReg.test(loginForm.phone)) {
+    uni.showToast({ title: '请输入正确的手机号', icon: 'none' })
+    return
   }
-  finally {
-    loading.value = false
+  if (!loginForm.password) {
+    uni.showToast({ title: '请输入密码', icon: 'none' })
+    return
   }
+  submitLogin()
 }
 
 function goToRegister() {
@@ -85,16 +88,14 @@ function goBack() {
 
     <view class="mb-10 flex flex-col gap-6">
       <wd-input
-        v-model="form.phone"
-        label="手机号"
-        placeholder="请输入11位手机号"
+        v-model="loginForm.phone"
+        placeholder="请输入 11 位手机号"
         type="number"
         :maxlength="11"
         clearable
       />
       <wd-input
-        v-model="form.password"
-        label="密码"
+        v-model="loginForm.password"
         placeholder="请输入登录密码"
         prefix-icon="lock"
         show-password
@@ -102,7 +103,13 @@ function goBack() {
       />
     </view>
 
-    <wd-button type="primary" block size="large" :loading="loading" @click="handleLogin">
+    <wd-button
+      type="primary"
+      block
+      size="large"
+      :loading="loading.value"
+      @click="handleLogin"
+    >
       登 录
     </wd-button>
 

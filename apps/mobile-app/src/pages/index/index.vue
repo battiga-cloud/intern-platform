@@ -155,10 +155,22 @@ onMounted(() => {
 </script>
 
 <template>
-  <view class="min-h-screen bg-gray-50 pb-20">
-    <wd-navbar title="首页" placeholder safeareainsettop fixed />
+  <view class="bg-gray-50 pb-20">
+    <wd-navbar
+      title="首页"
+      placeholder
+      safe-area-inset-top
+      fixed
+      custom-class="from-blue-500 to-indigo-500 bg-gradient-to-r !text-white"
+    >
+      <template #title>
+        <text class="text-white">
+          首页
+        </text>
+      </template>
+    </wd-navbar>
 
-    <view class="from-blue-500 to-indigo-500 bg-gradient-to-r p-6 pt-12 text-white">
+    <view class="from-blue-500 to-indigo-500 bg-gradient-to-r p-6 text-white">
       <view class="mb-2 text-2xl font-bold">
         {{ currentMonth }} 实习记录
       </view>
