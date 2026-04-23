@@ -4,6 +4,13 @@ import vueHook from 'alova/vue'
 import mockAdapter from '../mock/mockAdapter'
 import { handleAlovaError, handleAlovaResponse } from './handlers'
 
+// 定义后端返回的数据基本结构
+export interface ApiResponse<T = any> {
+  code: number
+  message: string
+  data: T
+}
+
 export const alovaInstance = createAlova({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'https://petstore3.swagger.io/api/v3',
   ...AdapterUniapp({
