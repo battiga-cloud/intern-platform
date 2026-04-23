@@ -40,17 +40,17 @@ Table ClassMember {
 Table Attendance {
   id String [pk]
   userId String [not null]
-  classId String [not null]
-  recordDate String [not null]
-  status String [not null, default: 'WORK']
-  mood String
-  address String
+  classId String
+  date String [not null]
+  status String [not null]
+  quote String
+  isQuoteSaved Boolean [not null, default: false]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   user User [not null]
 
   indexes {
-    (userId, classId, recordDate) [unique]
+    (userId, date) [unique]
   }
 }
 

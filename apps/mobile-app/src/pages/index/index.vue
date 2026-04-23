@@ -10,333 +10,452 @@ definePage({
   },
 })
 
-// ================= 类型定义 =================
-interface DayItem {
-  date: number // 日期数字
-  fullDate: string // YYYY-MM-DD
-  isCurrentMonth: boolean // 是否是本月
-  status: 'work' | 'rest' | 'leave' | null // 签到状态
+// 记录打卡详细信息的字典 (Key: YYYY-MM-DD)
+interface AttendanceRecord {
+  status: 'UNSIGNED' | 'WORK' | 'REST' | 'LEAVE'
+  quote?: string
+  isSaved?: boolean
 }
 
-// ================= 状态数据 =================
-const currentDate = new Date()
-const currentYear = ref(currentDate.getFullYear())
-const currentMonthNum = ref(currentDate.getMonth()) // 0-11
-const selectedDate = ref<string>('') // 当前选中的日期 YYYY-MM-DD
-const attendanceRecord = ref<Record<string, 'work' | 'rest' | 'leave'>>({}) // 模拟后端的打卡记录字典
+// 基础状态
+const weekHeaders = ['日', '一', '二', '三', '四', '五', '六']
+const currentYear = ref(new Date().getFullYear())
+const currentMonth = ref(new Date().getMonth() + 1)
 
-// ================= 计算属性 =================
-const currentMonth = computed(() => {
-  return `${currentYear.value}年${currentMonthNum.value + 1}月`
-})
+// 交互状态
+const selectedDate = ref('') // e.g., '2026-04-15'
+const activeWeekIndex = ref(-1)
 
-// 生成当前月份的日历网格数据
-const calendarDays = computed(() => {
-  const days: DayItem[] = []
+// 模拟后端拉取的打卡记录字典 (Key: YYYY-MM-DD, Value: 状态)
+const attendanceRecords = ref<Record<string, AttendanceRecord>>({})
+
+// 生成日历二维数组核心逻辑
+const calendarWeeks = computed(() => {
   const year = currentYear.value
-  const month = currentMonthNum.value
+  const month = currentMonth.value
 
-  const firstDayOfMonth = new Date(year, month, 1)
-  const lastDayOfMonth = new Date(year, month + 1, 0)
+  // 获取当月第一天是星期几 (0-6)
+  const firstDay = new Date(year, month - 1, 1).getDay()
+  // 获取当月总天数
+  const daysInMonth = new Date(year, month, 0).getDate()
 
-  // 1. 填充上个月的尾部几天
-  const startingDayOfWeek = firstDayOfMonth.getDay() // 0 是星期日
-  const prevMonthLastDay = new Date(year, month, 0).getDate()
-  for (let i = startingDayOfWeek - 1; i >= 0; i--) {
-    const d = prevMonthLastDay - i
-    days.push({
-      date: d,
-      fullDate: formatDate(new Date(year, month - 1, d)),
-      isCurrentMonth: false,
-      status: null,
-    })
+  const weeks = []
+  let currentWeek = []
+
+  // 填充月初的空白天数
+  for (let i = 0; i < firstDay; i++) {
+    currentWeek.push({ date: null })
   }
 
-  // 2. 填充本月
-  for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
-    const fullDate = formatDate(new Date(year, month, i))
-    days.push({
+  // 填充当月真实日期
+  const todayStr = new Date().toISOString().split('T')[0]
+  for (let i = 1; i <= daysInMonth; i++) {
+    // 补齐两位数
+    const monthStr = month < 10 ? `0${month}` : month
+    const dayStr = i < 10 ? `0${i}` : i
+    const fullDate = `${year}-${monthStr}-${dayStr}`
+
+    currentWeek.push({
       date: i,
       fullDate,
-      isCurrentMonth: true,
-      status: attendanceRecord.value[fullDate] || null, // 匹配字典中的状态
+      isToday: fullDate === todayStr,
+      status: attendanceRecords.value[fullDate] || 'UNSIGNED',
     })
+
+    // 满 7 天换行
+    if (currentWeek.length === 7) {
+      weeks.push(currentWeek)
+      currentWeek = []
+    }
   }
 
-  // 3. 填充下个月的开头几天，凑齐 42 个格子 (6行)
-  const remainingDays = 42 - days.length
-  for (let i = 1; i <= remainingDays; i++) {
-    days.push({
-      date: i,
-      fullDate: formatDate(new Date(year, month + 1, i)),
-      isCurrentMonth: false,
-      status: null,
-    })
+  // 填充月末的空白天数
+  if (currentWeek.length > 0) {
+    while (currentWeek.length < 7) {
+      currentWeek.push({ date: null })
+    }
+    weeks.push(currentWeek)
   }
 
-  return days
+  return weeks
 })
 
-// 获取当前选中日期的对象数据
-const selectedDateObj = computed(() => {
+// 计算当前选中日期的状态，供操作面板使用
+const selectedDayRecord = computed(() => {
   if (!selectedDate.value)
-    return null
-  return calendarDays.value.find(d => d.fullDate === selectedDate.value)
+    return { status: 'UNSIGNED' }
+
+  // 从二维数组中反查当前状态 (保证双向绑定视图一致性)
+  for (const week of calendarWeeks.value) {
+    const day = week.find(d => d.fullDate === selectedDate.value)
+    if (day)
+      return day
+  }
+  return { status: 'UNSIGNED' }
 })
 
-// 格式化选中日期文本显示
-const selectedDateText = computed(() => {
+const formatSelectedDateLabel = computed(() => {
   if (!selectedDate.value)
     return ''
-  const d = new Date(selectedDate.value)
-  const today = new Date()
-  if (isToday(selectedDate.value))
-    return '今天'
-  return `${d.getMonth() + 1}月${d.getDate()}日`
+  const [_, m, d] = selectedDate.value.split('-')
+  return `${Number(m)}月${Number(d)}日 状态：`
 })
 
-// ================= 方法 =================
+// 切换月份
+function changeMonth(delta: number) {
+  let newMonth = currentMonth.value + delta
+  let newYear = currentYear.value
 
-// 格式化日期为 YYYY-MM-DD
-function formatDate(date: Date) {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
+  if (newMonth > 12) {
+    newMonth = 1
+    newYear++
+  }
+  else if (newMonth < 1) {
+    newMonth = 12
+    newYear--
+  }
+
+  currentYear.value = newYear
+  currentMonth.value = newMonth
+  // 切换月份时收起面板
+  activeWeekIndex.value = -1
+  selectedDate.value = ''
 }
 
-// 判断是否是今天
-function isToday(dateString: string) {
-  return dateString === formatDate(new Date())
-}
+// 点击日期
+function handleSelectDate(day: any, weekIndex: number) {
+  if (!day.date)
+    return // 点击空白处无效
 
-// 点击日期块
-function handleDateClick(item: DayItem) {
-  if (!item.isCurrentMonth)
-    return // 暂不支持跨月点击，可以自己扩展
-  selectedDate.value = item.fullDate
-}
+  // 如果重复点击已选中的日期，则收起面板
+  if (selectedDate.value === day.fullDate) {
+    activeWeekIndex.value = -1
+    selectedDate.value = ''
+  }
+  else {
+    selectedDate.value = day.fullDate
+    activeWeekIndex.value = weekIndex // 控制在该行下方展开
+  }
+};
 
-// 更新状态 (模拟发送请求)
-function updateStatus(status: 'work' | 'rest' | 'leave' | null) {
+// 更新状态 (在此处调用后端接口)
+function updateStatus(status: 'WORK' | 'REST' | 'LEAVE') {
   if (!selectedDate.value)
     return
 
-  // TODO: 这里替换为调用后端的 API，例如 `checkInApi({ date: selectedDate.value, type: status })`
-  uni.showLoading({ title: '记录中...' })
+  // 乐观更新 UI 时，保留原有的 quote 状态，仅更新 status
+  const currentRecord = attendanceRecords.value[selectedDate.value] || {}
+  attendanceRecords.value[selectedDate.value] = {
+    ...currentRecord,
+    status,
+  }
 
-  setTimeout(() => {
-    // 模拟接口成功返回，更新本地字典
-    if (status) {
-      attendanceRecord.value[selectedDate.value] = status
-    }
-    else {
-      delete attendanceRecord.value[selectedDate.value] // 撤销记录
-    }
+  uni.showToast({ title: '已更新', icon: 'none' })
+};
 
-    uni.hideLoading()
-    uni.showToast({ title: '已保存', icon: 'success' })
-  }, 500)
-}
+// 样式辅助函数
+function getStatusColorClass(status: string) {
+  switch (status) {
+    case 'WORK': return 'bg-emerald-500 text-white shadow-sm shadow-emerald-200'
+    case 'REST': return 'bg-amber-500 text-white shadow-sm shadow-amber-200'
+    case 'LEAVE': return 'bg-red-500 text-white shadow-sm shadow-red-200'
+    default: return 'bg-gray-100 border border-gray-200' // 未签到
+  }
+};
 
-// ================= 生命周期 =================
 onMounted(() => {
-  // 页面加载时默认选中今天
-  selectedDate.value = formatDate(new Date())
-
-  // 模拟从后端拉取本月的已有记录
-  // TODO: 替换为实际的 API 请求获取当月打卡数据
-  attendanceRecord.value = {
-    '2026-04-20': 'work',
-    '2026-04-21': 'work',
-    '2026-04-22': 'leave',
+  // 模拟初始化数据，比如本月 1-3 号的数据
+  // const prefix = `${currentYear.value}-0${currentMonth.value}`
+  attendanceRecords.value = {
+    // [`${prefix}-01`]: { status: 'WORK', quote: '今天也是元气满满的一天！', isSaved: true },
+    // [`${prefix}-02`]: { status: 'WORK', quote: '需求好多，写不完根本写不完...', isSaved: true },
+    // [`${prefix}-03`]: { status: 'REST' }, // 休息，未填写心情
   }
 })
+
+// ==========================================
+// 心情模块 (今日碎碎念) 状态与逻辑
+// ==========================================
+
+// 模拟从后端获取到的随机语录池 (实际开发中可通过接口拉取)
+const randomQuotesPool = [
+  '只要我敲键盘够快，烦恼就追不上我。',
+  '今天也是为老板换新车努力的一天！',
+  '打工不仅能致富，还能交到好朋友（假的）。',
+  '咖啡哪有上班苦。',
+  '我爱工作，工作使我快乐（试图催眠）。',
+  '实习的意义在于，提前感受社会的毒打。',
+  '不干活，就没饭吃，加油打工人！',
+]
+
+// 当前正在编辑的语录内容
+const currentEditingQuote = ref('')
+
+watch(
+  () => selectedDayRecord.value,
+  (newRecord) => {
+    if (newRecord && newRecord.status !== 'UNSIGNED') {
+      // 如果该日期已有保存的语录，直接展示
+      if (newRecord.isSaved && newRecord.quote) {
+        currentEditingQuote.value = newRecord.quote
+      }
+      else {
+        // 如果未保存，自动生成一条随机语录填入输入框
+        changeRandomQuote()
+      }
+    }
+  },
+  { deep: true, immediate: true },
+)
+
+/**
+ * 随机更换一条语录
+ */
+function changeRandomQuote() {
+  // 为了避免连续两次随机到同样的句子，加个小逻辑
+  let newQuote = ''
+  do {
+    const randomIndex = Math.floor(Math.random() * randomQuotesPool.length)
+    newQuote = randomQuotesPool[randomIndex]
+  } while (newQuote === currentEditingQuote.value && randomQuotesPool.length > 1)
+
+  currentEditingQuote.value = newQuote
+};
+
+/**
+ * 点击“修改”按钮，使模块退回到编辑状态
+ */
+function editQuote() {
+  if (!selectedDate.value)
+    return
+  // 乐观更新 UI：将 isSaved 置为 false
+  attendanceRecords.value[selectedDate.value].isSaved = false
+  // 注意：这里我们保留 currentEditingQuote.value 不变，让用户在原内容上修改
+};
+
+/**
+ * 点击“记录此刻”保存心情
+ */
+async function saveQuote() {
+  if (!selectedDate.value)
+    return
+  if (!currentEditingQuote.value.trim()) {
+    uni.showToast({ title: '写点什么再记录吧~', icon: 'none' })
+    return
+  }
+
+  // 1. 本地乐观更新 UI
+  // 此时确保 attendanceRecords 中有该日期的对象，如果没有则创建一个基础对象
+  if (!attendanceRecords.value[selectedDate.value]) {
+    attendanceRecords.value[selectedDate.value] = { status: 'WORK' } // Fallback
+  }
+
+  // 更新该日期的数据
+  attendanceRecords.value[selectedDate.value] = {
+    ...attendanceRecords.value[selectedDate.value], // 保留 status
+    quote: currentEditingQuote.value,
+    isSaved: true,
+  }
+
+  // 2. 模拟调用后端接口 (替换为你的真实 API)
+  try {
+    uni.showLoading({ title: '保存中' })
+    /* await submitAttendanceApi({
+      date: selectedDate.value,
+      status: attendanceRecords.value[selectedDate.value].status,
+      quote: currentEditingQuote.value,
+      isQuoteSaved: true
+    });
+    */
+
+    // 模拟网络延迟
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    uni.hideLoading()
+    uni.showToast({ title: '记录成功', icon: 'success' })
+  }
+  catch (error) {
+    uni.hideLoading()
+    uni.showToast({ title: '保存失败，请重试', icon: 'none' })
+    // 如果失败，应该回退 isSaved 状态，这里略过复杂错误处理
+  }
+};
 </script>
 
 <template>
-  <view class="bg-gray-50 pb-20">
-    <wd-navbar
-      title="首页"
-      placeholder
-      safe-area-inset-top
-      fixed
-      custom-class="from-blue-500 to-indigo-500 bg-gradient-to-r !text-white"
-    >
-      <template #title>
-        <text class="text-white">
-          首页
-        </text>
-      </template>
-    </wd-navbar>
-
-    <view class="from-blue-500 to-indigo-500 bg-gradient-to-r p-6 text-white">
-      <view class="mb-2 text-2xl font-bold">
-        {{ currentMonth }} 实习记录
+  <view class="min-h-screen bg-gray-50 pb-10">
+    <view class="mx-4 mt-4 rounded-2xl bg-white p-4 shadow-sm">
+      <view class="mb-6 flex items-center justify-between px-2">
+        <view class="flex items-center">
+          <wd-icon name="calendar" size="20" color="#4D80F0" class="mr-2" />
+          <text class="text-lg text-gray-800 font-bold">
+            {{ currentYear }}年{{ currentMonth }}月
+          </text>
+        </view>
+        <view class="flex gap-6">
+          <wd-icon name="arrow-left" size="18" color="#666" @click="changeMonth(-1)" />
+          <wd-icon name="arrow-right" size="18" color="#666" @click="changeMonth(1)" />
+        </view>
       </view>
-      <view class="text-sm opacity-80">
-        轻松记录，享受实习
-      </view>
-    </view>
 
-    <view class="relative z-10 mx-4 mt-[-20px] rounded-xl bg-white p-4 shadow-sm">
-      <view class="mb-4 flex justify-between text-sm text-gray-500">
-        <text
-          v-for="day in ['日', '一', '二', '三', '四', '五', '六']"
-          :key="day"
-          class="flex-1 text-center"
-        >
+      <view class="grid grid-cols-7 mb-4 text-center">
+        <text v-for="day in weekHeaders" :key="day" class="text-xs text-gray-400 font-medium">
           {{ day }}
         </text>
       </view>
 
-      <view class="flex flex-wrap">
-        <view
-          v-for="(dateItem, index) in calendarDays"
-          :key="index"
-          class="relative mb-2 h-12 w-[14.28%] flex flex-col items-center justify-center"
-          @click="handleDateClick(dateItem)"
-        >
-          <text
-            class="text-base"
-            :class="{
-              'text-gray-300': !dateItem.isCurrentMonth,
-              'text-gray-800': dateItem.isCurrentMonth,
-              'font-bold text-blue-500': isToday(dateItem.fullDate),
-              'bg-blue-100 rounded-full w-8 h-8 flex items-center justify-center':
-                selectedDate === dateItem.fullDate,
-            }"
-          >
-            {{ dateItem.date }}
-          </text>
+      <view class="relative">
+        <block v-for="(week, weekIndex) in calendarWeeks" :key="weekIndex">
+          <view class="grid grid-cols-7 mb-2 gap-y-4">
+            <view
+              v-for="(day, dayIndex) in week" :key="dayIndex"
+              class="relative h-10 flex flex-col items-center justify-center" @click="handleSelectDate(day, weekIndex)"
+            >
+              <template v-if="day.date">
+                <view
+                  class="h-8 w-8 flex items-center justify-center rounded-full transition-all duration-200" :class="[
+                    getStatusColorClass(day.status),
+                    selectedDate === day.fullDate ? 'ring-2 ring-blue-300 ring-offset-1 scale-110' : '',
+                  ]"
+                >
+                  <text class="text-sm font-medium" :class="day.status === 'UNSIGNED' ? 'text-gray-600' : 'text-white'">
+                    {{ day.date }}
+                  </text>
+                </view>
+                <view v-if="day.isToday" class="absolute bottom-[-6px] h-1 w-1 rounded-full bg-blue-500" />
+              </template>
+            </view>
+          </view>
 
           <view
-            v-if="dateItem.status && dateItem.isCurrentMonth"
-            class="absolute bottom-1 h-1.5 w-1.5 rounded-full"
-            :class="{
-              'bg-green-500': dateItem.status === 'work',
-              'bg-gray-400': dateItem.status === 'rest',
-              'bg-orange-500': dateItem.status === 'leave',
-            }"
-          />
-        </view>
-      </view>
-    </view>
-
-    <view
-      v-if="selectedDateObj"
-      class="mx-4 mt-6 animate-fade-in rounded-xl bg-white p-5 shadow-sm"
-    >
-      <view class="mb-4 flex items-center justify-between">
-        <text class="text-lg text-gray-800 font-bold">
-          {{ selectedDateText }}
-        </text>
-        <text class="text-sm text-gray-500">
-          实习记录
-        </text>
-      </view>
-
-      <view class="mb-6 flex justify-around">
-        <view
-          class="w-[30%] flex flex-col items-center border-2 rounded-lg p-3 transition-all"
-          :class="
-            selectedDateObj.status === 'work'
-              ? 'border-green-500 bg-green-50'
-              : 'border-gray-100 bg-gray-50'
-          "
-          @click="updateStatus('work')"
-        >
-          <wd-icon
-            name="check-circle-o"
-            size="24"
-            :color="selectedDateObj.status === 'work' ? '#10B981' : '#9CA3AF'"
-          />
-          <text
-            class="mt-2 text-sm"
-            :class="
-              selectedDateObj.status === 'work'
-                ? 'text-green-600 font-bold'
-                : 'text-gray-500'
-            "
+            v-if="activeWeekIndex === weekIndex"
+            class="mx-1 mb-4 animate-fade-in rounded-xl bg-gray-50 p-4 shadow-inner transition-all"
           >
+            <view class="flex items-center justify-between">
+              <text class="text-sm text-gray-500">
+                {{ formatSelectedDateLabel }}
+              </text>
+              <view class="flex gap-3">
+                <wd-tag
+                  :plain="selectedDayRecord.status !== 'WORK'"
+                  :type="selectedDayRecord.status === 'WORK' ? 'success' : 'default'" round
+                  @click="updateStatus('WORK')"
+                >
+                  上班
+                </wd-tag>
+                <wd-tag
+                  :plain="selectedDayRecord.status !== 'REST'"
+                  :color="selectedDayRecord.status === 'REST' ? '#f59e0b' : ''" round @click="updateStatus('REST')"
+                >
+                  休息
+                </wd-tag>
+                <wd-tag
+                  :plain="selectedDayRecord.status !== 'LEAVE'"
+                  :type="selectedDayRecord.status === 'LEAVE' ? 'danger' : 'default'" round
+                  @click="updateStatus('LEAVE')"
+                >
+                  请假
+                </wd-tag>
+              </view>
+            </view>
+            <view
+              v-if="activeWeekIndex === weekIndex && selectedDayRecord.status !== 'UNSIGNED'"
+              class="mt-2 animate-fade-in border border-blue-50 rounded-xl bg-white p-4 shadow-sm transition-all"
+            >
+              <view v-if="selectedDayRecord.isSaved" class="relative rounded-lg bg-blue-50 p-3">
+                <text class="absolute left-2 top-1 text-4xl text-blue-200 leading-none font-serif">
+                  "
+                </text>
+                <text class="relative z-10 ml-4 mt-2 block text-sm text-gray-700">
+                  {{ selectedDayRecord.quote }}
+                </text>
+                <view class="mt-2 flex justify-end">
+                  <view class="flex items-center text-xs text-blue-500" @click="editQuote">
+                    <wd-icon name="edit" size="14" class="mr-1" />修改
+                  </view>
+                </view>
+              </view>
+
+              <view v-else class="relative">
+                <view class="mb-3 flex items-center justify-between">
+                  <text class="text-xs text-gray-400">
+                    今日碎碎念
+                  </text>
+                  <text class="flex items-center text-xs text-blue-500" @click="changeRandomQuote">
+                    <wd-icon name="refresh" size="14" class="mr-1" />换一句
+                  </text>
+                </view>
+
+                <wd-textarea
+                  v-model="currentEditingQuote" placeholder="写下今天的实习心情..." :maxlength="100" show-word-limit
+                  custom-class="bg-gray-50 rounded-md border-none p-1 text-sm"
+                />
+
+                <view class="mt-3 flex justify-end">
+                  <wd-button size="small" type="primary" custom-class="rounded-full" @click="saveQuote">
+                    记录此刻
+                  </wd-button>
+                </view>
+              </view>
+            </view>
+          </view>
+        </block>
+      </view>
+
+      <view class="mt-6 flex items-center justify-center gap-6 border-t border-gray-100 pt-4">
+        <view class="flex items-center">
+          <view class="mr-1.5 h-2.5 w-2.5 rounded-full bg-emerald-500" /><text class="text-xs text-gray-500">
             上班
           </text>
         </view>
-
-        <view
-          class="w-[30%] flex flex-col items-center border-2 rounded-lg p-3 transition-all"
-          :class="
-            selectedDateObj.status === 'rest'
-              ? 'border-gray-500 bg-gray-100'
-              : 'border-gray-100 bg-gray-50'
-          "
-          @click="updateStatus('rest')"
-        >
-          <wd-icon
-            name="coffee-o"
-            size="24"
-            :color="selectedDateObj.status === 'rest' ? '#6B7280' : '#9CA3AF'"
-          />
-          <text
-            class="mt-2 text-sm"
-            :class="
-              selectedDateObj.status === 'rest'
-                ? 'text-gray-700 font-bold'
-                : 'text-gray-500'
-            "
-          >
+        <view class="flex items-center">
+          <view class="mr-1.5 h-2.5 w-2.5 rounded-full bg-amber-500" /><text class="text-xs text-gray-500">
             休息
           </text>
         </view>
-
-        <view
-          class="w-[30%] flex flex-col items-center border-2 rounded-lg p-3 transition-all"
-          :class="
-            selectedDateObj.status === 'leave'
-              ? 'border-orange-500 bg-orange-50'
-              : 'border-gray-100 bg-gray-50'
-          "
-          @click="updateStatus('leave')"
-        >
-          <wd-icon
-            name="warn-o"
-            size="24"
-            :color="selectedDateObj.status === 'leave' ? '#F97316' : '#9CA3AF'"
-          />
-          <text
-            class="mt-2 text-sm"
-            :class="
-              selectedDateObj.status === 'leave'
-                ? 'text-orange-600 font-bold'
-                : 'text-gray-500'
-            "
-          >
+        <view class="flex items-center">
+          <view class="mr-1.5 h-2.5 w-2.5 rounded-full bg-red-500" /><text class="text-xs text-gray-500">
             请假
           </text>
         </view>
-      </view>
-
-      <view v-if="selectedDateObj.status" class="text-center">
-        <text class="text-sm text-blue-500" @click="updateStatus(null)">
-          撤销今日记录
-        </text>
+        <view class="flex items-center">
+          <view class="mr-1.5 h-2.5 w-2.5 border border-gray-300 rounded-full bg-gray-100" /><text
+            class="text-xs text-gray-500"
+          >
+            未签到
+          </text>
+        </view>
       </view>
     </view>
   </view>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.2s ease-out forwards;
+  transform-origin: top;
 }
+
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(-10px);
+    height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    overflow: hidden;
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
+    height: auto;
   }
+}
+
+// v-deep 选择器
+:deep(.wd-textarea__inner) {
+  height: 80px !important;
 }
 </style>

@@ -84,24 +84,22 @@ model ClassMember {
 model Attendance {
   id        String   @id @default(cuid())
   userId    String
-  classId   String   // 所属班级/组织
+  classId   String?  // 如果散客允许打卡则为可选，如果必须绑定班级则为必填
   
-  recordDate String  // 记录的日期，如 "2026-04-22"
+  date      String   // 格式：YYYY-MM-DD
+  status    String   // 枚举：WORK(上班), REST(休息), LEAVE(请假)
   
-  // 核心：记录的类型
-  status    String   @default("WORK") // "WORK" (上班), "REST" (休息), "LEAVE" (请假)
-  
-  // 其他你希望保留的可选字段
-  mood      String?  // 心情盲盒（可选）
-  address   String?  // 定位（可选）
-  
+  // 心情语录模块
+  quote     String?  @db.VarChar(200) // 记录的语录文本
+  isQuoteSaved Boolean @default(false) // 标识前端是否点击了"记录此刻"
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user      User     @relation(fields: [userId], references: [id])
-
-  // 联合唯一索引：确保一个人在同一个班级，一天只能有一条记录（方便 upsert）
-  @@unique([userId, classId, recordDate])
+  
+  // 核心约束：一个学生每天只能有一条打卡记录
+  @@unique([userId, date])
 }
 
 model Post {
