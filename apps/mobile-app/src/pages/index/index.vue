@@ -283,7 +283,9 @@ async function saveQuote() {
 </script>
 
 <template>
-  <view class="min-h-screen bg-gray-50 pb-10">
+  <view class="bg-gray-50 pb-10">
+    <wd-navbar title="实习圈" placeholder safe-area-inset-top fixed />
+
     <view class="mx-4 mt-4 rounded-2xl bg-white p-4 shadow-sm">
       <view class="mb-6 flex items-center justify-between px-2">
         <view class="flex items-center">
@@ -431,6 +433,11 @@ async function saveQuote() {
 </template>
 
 <style lang="scss" scoped>
+page {
+  --un-bg-opacity: 1;
+  background-color: rgb(249 250 251 / var(--un-bg-opacity));
+}
+
 .animate-fade-in {
   animation: fadeIn 0.2s ease-out forwards;
   transform-origin: top;

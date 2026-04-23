@@ -72,7 +72,7 @@ function goBack() {
 </script>
 
 <template>
-  <view class="min-h-screen bg-white px-8 pt-20">
+  <view class="min-h-screen bg-white px-6 pt-16">
     <view class="inline-block rounded-full bg-blue-50 p-3 shadow-md">
       <wd-icon name="arrow-left" size="24" @click="goBack" />
     </view>
@@ -88,28 +88,13 @@ function goBack() {
 
     <view class="mb-10 flex flex-col gap-6">
       <wd-input
-        v-model="loginForm.phone"
-        placeholder="请输入 11 位手机号"
-        type="number"
-        :maxlength="11"
+        v-model="loginForm.phone" placeholder="请输入 11 位手机号" type="number" prefix-icon="mobile" :maxlength="11"
         clearable
       />
-      <wd-input
-        v-model="loginForm.password"
-        placeholder="请输入登录密码"
-        prefix-icon="lock"
-        show-password
-        clearable
-      />
+      <wd-input v-model="loginForm.password" placeholder="请输入登录密码" prefix-icon="lock" show-password clearable />
     </view>
 
-    <wd-button
-      type="primary"
-      block
-      size="large"
-      :loading="loading.value"
-      @click="handleLogin"
-    >
+    <wd-button type="primary" block size="large" :loading="loading.value" @click="handleLogin">
       登 录
     </wd-button>
 

@@ -98,7 +98,7 @@ const { themeVars, theme } = useManualTheme()
 </script>
 
 <template>
-  <wd-config-provider :theme-vars="themeVars" :theme="theme" :custom-class="`page-wraper ${theme}`">
+  <wd-config-provider :theme-vars="themeVars" :theme="theme" :custom-class="`page-wrapper ${theme}`">
     <ku-root-view />
     <wd-notify />
     <wd-message-box />
