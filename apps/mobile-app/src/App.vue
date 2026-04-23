@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { onLaunch, onShow, onHide } from "@dcloudio/uni-app";
-onLaunch(() => {
-  console.log("App Launch");
-});
-onShow(() => {
-  console.log("App Show");
-});
-onHide(() => {
-  console.log("App Hide");
-});
+onLaunch(() => {})
 </script>
-<style></style>
+
+<style lang="scss">
+@use '@wot-ui/ui/styles/theme/index.scss' as *;
+.page-wraper {
+  min-height: calc(100vh - var(--window-top));
+  box-sizing: border-box;
+  background: var(--wot-filled-content);
+}
+// .wot-theme-dark.page-wraper {
+//   background: #222;
+// }
+</style>

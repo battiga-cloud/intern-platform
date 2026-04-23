@@ -1,19 +1,65 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useUserStore } from '@/store/useUserStore'
+
+definePage({
+  name: 'mine',
+  layout: 'tabbar',
+  style: {
+    navigationBarTitleText: '我的',
+    navigationStyle: 'custom',
+  },
+})
+
+// 逻辑待完善
+
+const userStore = useUserStore()
+const userInfo = computed(() => userStore.userInfo)
+
+watch(
+  userInfo,
+  (v) => {
+    console.log('userInfo', v)
+    if (v?.id) {
+      // 登录成功，更新用户信息
+    }
+  },
+  { immediate: true },
+)
+
+function handleProfile() {
+  uni.navigateTo({ url: '/pages-user/settings' })
+}
+
+async function handleLoginClick() {
+  uni.navigateTo({
+    url: '/pages/login/index',
+  })
+}
+</script>
+
 <template>
   <view class="container">
-    <wd-navbar fixed placeholder title="我的" safeAreaInsetTop />
+    <wd-navbar title="我的" placeholder safe-area-inset-top fixed />
 
     <view v-if="userInfo?.id" class="header" @click="handleProfile">
-      <view class="avatar"></view>
+      <view class="avatar" />
       <view class="info">
-        <text class="name">张同学</text>
-        <text class="school">某某职业技术学院 - 机电专业</text>
+        <text class="name">
+          张同学
+        </text>
+        <text class="school">
+          某某职业技术学院 - 机电专业
+        </text>
       </view>
     </view>
     <!-- 登录 -->
     <view v-else class="header" @click="handleLoginClick">
-      <view class="avatar"></view>
+      <view class="avatar" />
       <view class="info">
-        <text class="name">登录/注册</text>
+        <text class="name">
+          登录/注册
+        </text>
       </view>
     </view>
 
@@ -33,37 +79,6 @@
     </view>
   </view>
 </template>
-
-<script setup lang="ts">
-import { useUserStore } from "@/store/useUserStore";
-import { computed } from "vue";
-
-// 逻辑待完善
-
-const userStore = useUserStore();
-const userInfo = computed(() => userStore.userInfo);
-
-watch(
-  userInfo,
-  (v) => {
-    console.log("userInfo", v);
-    if (v?.id) {
-      // 登录成功，更新用户信息
-    }
-  },
-  { immediate: true }
-);
-
-function handleProfile() {
-  uni.navigateTo({ url: "/pages-user/settings" });
-}
-
-async function handleLoginClick() {
-  uni.navigateTo({
-    url: "/pages/login/index",
-  });
-}
-</script>
 
 <style scoped>
 .container {

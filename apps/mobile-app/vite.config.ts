@@ -1,76 +1,86 @@
-import path from "node:path";
-import { defineConfig, loadEnv } from "vite";
-import uni from "@dcloudio/vite-plugin-uni";
-// https://uni-helper.js.org/vite-plugin-uni-pages
-import UniPages from "@uni-helper/vite-plugin-uni-pages";
-// https://github.com/uni-ku/root 全局挂载组件
-import UniKuRoot from "@uni-ku/root";
-// 更新vite.config自动重载
-import ViteRestart from "vite-plugin-restart";
-// https://wot-design-uni.cn/ UI组件库
-import { WotResolver } from "@uni-helper/vite-plugin-uni-components/resolvers";
-// 自动按需引入组件
-import Components from "@uni-helper/vite-plugin-uni-components";
-//
-import AutoImport from "unplugin-auto-import/vite";
-
-export default async ({ command, mode }) => {
-  // mode: 区分环境 development || production
-  const { UNI_PLATFORM } = process.env;
-  console.log("UNI_PLATFORM -> ", UNI_PLATFORM); // 得到 mp-weixin, h5, app 等
-  console.log("command, mode -> ", command, mode);
-  const env = loadEnv(mode, process.cwd(), "");
-  const {
-    VITE_APP_PORT,
-    VITE_SERVER_BASEURL,
-    VITE_APP_PROXY,
-    VITE_SERVER_TIMEOUT,
-  } = env;
-  const UnoCSS = await import("unocss/vite");
-
-  return defineConfig({
-    plugins: [
-      UniPages({
-        // 为页面路径生成 TypeScript 声明
-        dts: "src/types/uni-pages.d.ts",
-        // 排除的页面
-        exclude: ["**/components/**/**.*"],
-      }),
-      Components({
-        resolvers: [WotResolver()],
-      }),
-      UniKuRoot({
-        rootFileName: "KuRoot",
-      }),
-      UnoCSS.default(),
-      uni(),
-      AutoImport({
-        imports: ["vue", "uni-app"],
-        dts: "src/types/auto-import.d.ts",
-        dirs: ["src/hooks"], // 自动导入 hooks
-        eslintrc: { enabled: true },
-        vueTemplate: true, // default false
-      }),
-      ViteRestart({
-        // 通过这个插件，在修改vite.config.js文件则不需要重新运行也生效配置
-        restart: ["vite.config.js"],
-      }),
-    ],
-    define: {
-      __UNI_PLATFORM__: JSON.stringify(UNI_PLATFORM),
-      __VITE_APP_PROXY__: JSON.stringify(VITE_APP_PROXY),
-      __VITE_SERVER_BASEURL__: JSON.stringify(VITE_SERVER_BASEURL),
-      __VITE_SERVER_TIMEOUT__: JSON.stringify(VITE_SERVER_TIMEOUT),
-    },
-    resolve: {
-      extensions: [".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json"],
-      alias: {
-        "@": path.join(process.cwd(), "./src"),
+import Uni from '@uni-helper/plugin-uni'
+import { isMpWeixin } from '@uni-helper/uni-env'
+import UniHelperComponents from '@uni-helper/vite-plugin-uni-components'
+import UniHelperLayouts from '@uni-helper/vite-plugin-uni-layouts'
+import UniHelperManifest from '@uni-helper/vite-plugin-uni-manifest'
+import UniHelperPages from '@uni-helper/vite-plugin-uni-pages'
+import Optimization from '@uni-ku/bundle-optimizer'
+import UniKuRoot from '@uni-ku/root'
+import { UniEchartsResolver } from 'uni-echarts/resolver'
+import { UniEcharts } from 'uni-echarts/vite'
+import UnoCSS from 'unocss/vite'
+import AutoImport from 'unplugin-auto-import/vite'
+import { defineConfig } from 'vite'
+import { WotResolver } from './src/resolver'
+// https://vitejs.dev/config/
+export default defineConfig({
+  base: './',
+  optimizeDeps: {
+    exclude: ['@wot-ui/ui', 'uni-echarts'],
+  },
+  plugins: [
+    // https://github.com/uni-helper/vite-plugin-uni-manifest
+    UniHelperManifest(),
+    // https://github.com/uni-helper/vite-plugin-uni-pages
+    UniHelperPages({
+      dts: 'src/uni-pages.d.ts',
+      subPackages: [
+        'src/subPages',
+        'src/subEcharts',
+        'src/subAsyncEcharts',
+      ],
+      /**
+       * 排除的页面，相对于 dir 和 subPackages
+       * @default []
+       */
+      exclude: ['**/components/**/*.*', '**/_original/**/*.*'],
+    }),
+    // https://github.com/uni-helper/vite-plugin-uni-layouts
+    UniHelperLayouts(),
+    // https://github.com/uni-helper/vite-plugin-uni-components
+    UniHelperComponents({
+      resolvers: [WotResolver(), UniEchartsResolver()],
+      dts: 'src/components.d.ts',
+      dirs: ['src/components', 'src/business'],
+      directoryAsNamespace: true,
+    }),
+    // https://github.com/uni-ku/root
+    UniKuRoot(),
+    // https://uni-echarts.xiaohe.ink
+    UniEcharts(),
+    // https://uni-helper.cn/plugin-uni
+    Uni(),
+    // https://github.com/uni-ku/bundle-optimizer
+    Optimization({
+      enable: isMpWeixin,
+      logger: false,
+    }),
+    // https://github.com/antfu/unplugin-auto-import
+    AutoImport({
+      imports: ['vue', '@vueuse/core', 'pinia', 'uni-app', {
+        from: '@wot-ui/router',
+        imports: ['createRouter', 'useRouter', 'useRoute'],
+      }, {
+        from: '@wot-ui/ui',
+        imports: ['useToast', 'useDialog', 'useNotify', 'CommonUtil'],
+      }, {
+        from: 'alova/client',
+        imports: ['usePagination', 'useRequest'],
+      }],
+      dts: 'src/auto-imports.d.ts',
+      dirs: ['src/composables', 'src/store', 'src/utils', 'src/api'],
+      vueTemplate: true,
+    }),
+    // https://github.com/antfu/unocss
+    // see unocss.config.ts for config
+    UnoCSS(),
+  ],
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern-compiler',
+        silenceDeprecations: ['legacy-js-api'],
       },
     },
-    server: {
-      host: "0.0.0.0",
-      port: Number.parseInt(VITE_APP_PORT, 10), // 服务端口
-    },
-  });
-};
+  },
+})

@@ -1,21 +1,15 @@
-import { createSSRApp } from "vue";
-import App from "./App.vue";
-// pinia
-import store from "@/store/index";
-// 路由拦截
-import { routeInterceptor } from "@/utils/route";
+import { createSSRApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+import 'uno.css'
 
-import "uno.css"; // 引入 UnoCSS 核心样式
-// 全局样式
-import "@/style/index.scss";
-// 修改wot-ui样式
-import "@/style/wot-ui.scss";
-
+const pinia = createPinia()
+pinia.use(persistPlugin)
 export function createApp() {
-  const app = createSSRApp(App);
-  app.use(store);
-  app.use(routeInterceptor);
+  const app = createSSRApp(App)
+  app.use(router)
+  app.use(pinia)
   return {
     app,
-  };
+  }
 }

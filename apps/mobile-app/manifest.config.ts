@@ -10,7 +10,7 @@
 import { defineManifestConfig } from '@uni-helper/vite-plugin-uni-manifest'
 
 export default defineManifestConfig({
-  'name': 'wot-starter',
+  'name': 'starter',
   'appid': '__UNI__1208592',
   'description': '',
   'versionName': '1.0.0',
@@ -90,6 +90,10 @@ export default defineManifestConfig({
   'h5': {
     darkmode: true,
     themeLocation: 'theme.json',
+    router: {
+      mode: 'history',
+      base: '/scale-h5/',
+    },
   },
   'uniStatistics': {
     enable: false,

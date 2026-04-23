@@ -1,88 +1,59 @@
-import { defineUniPages } from "@uni-helper/vite-plugin-uni-pages";
+/*
+ * @Author: weisheng
+ * @Date: 2025-06-23 22:23:05
+ * @LastEditTime: 2025-06-27 13:04:54
+ * @LastEditors: weisheng
+ * @Description:
+ * @FilePath: /wot-starter/pages.config.ts
+ * 记得注释
+ */
+import { defineUniPages } from '@uni-helper/vite-plugin-uni-pages'
 
+// https://uni-helper.js.org/vite-plugin-uni-pages/guide
 export default defineUniPages({
-  pages: [
-    {
-      path: "pages/index/index",
-      style: {
-        navigationBarTitleText: "首页",
-        navigationStyle: "custom",
-      },
-    },
-    {
-      path: "pages/square/index",
-      style: {
-        navigationBarTitleText: "厂友圈",
-        enablePullDownRefresh: true,
-        navigationStyle: "custom",
-      },
-    },
-    {
-      path: "pages/mine/index",
-      style: {
-        navigationBarTitleText: "我的",
-        navigationBarBackgroundColor: "#f8f8f8",
-        navigationStyle: "custom",
-      },
-    },
-    {
-      path: "pages/login/index",
-      style: {
-        navigationBarTitleText: "登录",
-        navigationStyle: "custom",
-      },
-    },
-    {
-      path: "pages/login/register",
-      style: {
-        navigationBarTitleText: "注册",
-        navigationStyle: "custom",
-      },
-    },
-  ],
-  subPackages: [
-    {
-      root: "pages-user/",
-      pages: [
-        {
-          path: "settings",
-          style: {
-            navigationBarTitleText: "设置",
-          },
-        },
-      ],
-    },
-  ],
+  pages: [],
   globalStyle: {
-    navigationBarTextStyle: "black",
-    navigationBarTitleText: "实习平台",
-    navigationBarBackgroundColor: "#ffffff",
-    backgroundColor: "#f8f8f8",
+    // 导航栏配置
+    navigationBarBackgroundColor: '@navBgColor',
+    navigationBarTextStyle: '@navTxtStyle',
+    navigationBarTitleText: 'Wot Starter',
+
+    // 页面背景配置
+    backgroundColor: '@bgColor',
+    backgroundTextStyle: '@bgTxtStyle',
+    backgroundColorTop: '@bgColorTop',
+    backgroundColorBottom: '@bgColorBottom',
+
+    // 下拉刷新配置
+    enablePullDownRefresh: false,
+    onReachBottomDistance: 50,
+
+    // 动画配置
+    animationType: 'pop-in',
+    animationDuration: 300,
   },
   tabBar: {
-    color: "#999999",
-    selectedColor: "#007AFF",
-    backgroundColor: "#ffffff",
-    borderStyle: "black",
+    custom: true,
+    // #ifdef MP-ALIPAY
+    customize: true,
+    // 暂时不生效。4.71.2025061206-alpha已修复：https://uniapp.dcloud.net.cn/release-note-alpha.html#_4-71-2025061206-alpha，我们等正式版发布后更新。
+    overlay: true,
+    // #endif
+    height: '0',
+    color: '@tabColor',
+    selectedColor: '@tabSelectedColor',
+    backgroundColor: '@tabBgColor',
+    borderStyle: '@tabBorderStyle',
     list: [
       {
-        pagePath: "pages/index/index",
-        text: "首页",
-        iconPath: "static/imgs/tabs/tab1.png",
-        selectedIconPath: "static/imgs/tabs/tab1-a.png",
+        pagePath: 'pages/index/index',
       },
       {
-        pagePath: "pages/square/index",
-        text: "广场",
-        iconPath: "static/imgs/tabs/tab3.png",
-        selectedIconPath: "static/imgs/tabs/tab3-a.png",
+        pagePath: 'pages/square/index',
       },
       {
-        pagePath: "pages/mine/index",
-        text: "我的",
-        iconPath: "static/imgs/tabs/tab5.png",
-        selectedIconPath: "static/imgs/tabs/tab5-a.png",
+        pagePath: 'pages/mine/index',
       },
     ],
   },
-});
+})
