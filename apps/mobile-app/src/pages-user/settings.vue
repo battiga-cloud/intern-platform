@@ -4,9 +4,9 @@ import { updateProfileApi } from '@/api/users'
 import { useUserStore } from '@/store/useUserStore'
 
 definePage({
-  name: 'login',
+  name: 'settings',
   style: {
-    navigationBarTitleText: '登录',
+    navigationBarTitleText: '个人设置',
     navigationStyle: 'custom',
   },
 })
@@ -83,23 +83,20 @@ function handleLogout() {
     },
   })
 }
+
+function handleClickLeft() {
+  uni.navigateBack()
+}
 </script>
 
 <template>
   <view class="min-h-screen bg-gray-50 pb-10">
-    <view class="bg-white p-4 pt-12">
-      <text class="text-xl text-gray-800 font-bold">
-        个人设置
-      </text>
-    </view>
+    <wd-navbar title="个人设置" placeholder safe-area-inset-top left-arrow fixed @click-left="handleClickLeft" />
 
     <view class="mb-3 flex flex-col items-center bg-white py-8">
       <view class="relative" @click="handleUploadAvatar">
         <wd-img
-          :src="form.avatar || '/static/logo.png'"
-          round
-          width="80"
-          height="80"
+          :src="form.avatar || '/static/logo.png'" round width="80" height="80"
           custom-class="border-4 border-white shadow-sm"
         />
         <view
@@ -115,56 +112,32 @@ function handleLogout() {
 
     <wd-cell-group border>
       <view class="bg-white px-4">
+        <wd-input v-model="form.name" label="真实姓名" placeholder="请输入您的姓名" label-width="80px" align-right clearable />
         <wd-input
-          v-model="form.name"
-          label="真实姓名"
-          placeholder="请输入您的姓名"
-          label-width="80px"
-          align-right
-          clearable
-        />
-        <wd-input
-          v-model="form.phone"
-          label="手机号码"
-          placeholder="请输入手机号"
-          type="number"
-          :maxlength="11"
-          label-width="80px"
-          align-right
-          clearable
+          v-model="form.phone" label="手机号码" placeholder="请输入手机号" type="number" :maxlength="11"
+          label-width="80px" align-right clearable
         />
       </view>
     </wd-cell-group>
 
     <view class="p-6">
       <wd-button
-        type="primary"
-        block
-        size="large"
-        :loading="saving"
-        custom-class="rounded-lg shadow-md"
+        type="primary" size="large" :loading="saving" round block custom-class="shadow-md"
         @click="handleSave"
       >
-        保 存 修 改
+        保存修改
       </wd-button>
 
-      <view class="mt-10">
-        <wd-button
-          plain
-          type="error"
-          block
-          size="large"
-          custom-class="bg-white"
-          @click="handleLogout"
-        >
-          退 出 登 录
+      <view class="mt-4">
+        <wd-button variant="soft" type="warning" size="large" round block @click="handleLogout">
+          退出登录
         </wd-button>
       </view>
     </view>
 
     <view class="mt-4 text-center">
       <text class="text-xs text-gray-300">
-        版本 v1.0.1
+        版本 v1.0.0
       </text>
     </view>
   </view>

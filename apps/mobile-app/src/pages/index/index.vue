@@ -156,10 +156,10 @@ function updateStatus(status: 'WORK' | 'REST' | 'LEAVE') {
 // 样式辅助函数
 function getStatusColorClass(status: string) {
   switch (status) {
-    case 'WORK': return 'bg-emerald-500 text-white shadow-sm shadow-emerald-200'
-    case 'REST': return 'bg-amber-500 text-white shadow-sm shadow-amber-200'
-    case 'LEAVE': return 'bg-red-500 text-white shadow-sm shadow-red-200'
-    default: return 'bg-gray-100 border border-gray-200' // 未签到
+    case 'WORK': return 'bg-[#10b981] text-white' // 活力绿 (emerald-500)
+    case 'REST': return 'bg-[#f59e0b] text-white' // 阳光黄 (amber-500)
+    case 'LEAVE': return 'bg-[#ef4444] text-white' // 醒目红 (red-500)
+    default: return 'bg-gray-50 border-2 border-gray-100 text-gray-500' // 未签到 (更扁平)
   }
 };
 
@@ -317,7 +317,7 @@ async function saveQuote() {
                 <view
                   class="h-8 w-8 flex items-center justify-center rounded-full transition-all duration-200" :class="[
                     getStatusColorClass(day.status),
-                    selectedDate === day.fullDate ? 'ring-2 ring-blue-300 ring-offset-1 scale-110' : '',
+                    selectedDate === day.fullDate ? 'ring-4 ring-blue-100 scale-105' : '', // 修改这里
                   ]"
                 >
                   <text class="text-sm font-medium" :class="day.status === 'UNSIGNED' ? 'text-gray-600' : 'text-white'">
@@ -390,7 +390,7 @@ async function saveQuote() {
 
                 <wd-textarea
                   v-model="currentEditingQuote" placeholder="写下今天的实习心情..." :maxlength="100" show-word-limit
-                  custom-class="bg-gray-50 rounded-md border-none p-1 text-sm"
+                  custom-class="bg-gray-100 rounded-lg border-0 p-2 text-sm mt-2"
                 />
 
                 <view class="mt-3 flex justify-end">
@@ -406,24 +406,26 @@ async function saveQuote() {
 
       <view class="mt-6 flex items-center justify-center gap-6 border-t border-gray-100 pt-4">
         <view class="flex items-center">
-          <view class="mr-1.5 h-2.5 w-2.5 rounded-full bg-emerald-500" /><text class="text-xs text-gray-500">
+          <view class="mr-1.5 h-3 w-3 rounded-full bg-[#10b981]" />
+          <text class="text-xs text-gray-500">
             上班
           </text>
         </view>
         <view class="flex items-center">
-          <view class="mr-1.5 h-2.5 w-2.5 rounded-full bg-amber-500" /><text class="text-xs text-gray-500">
+          <view class="mr-1.5 h-3 w-3 rounded-full bg-[#f59e0b]" />
+          <text class="text-xs text-gray-500">
             休息
           </text>
         </view>
         <view class="flex items-center">
-          <view class="mr-1.5 h-2.5 w-2.5 rounded-full bg-red-500" /><text class="text-xs text-gray-500">
+          <view class="mr-1.5 h-3 w-3 rounded-full bg-[#ef4444]" />
+          <text class="text-xs text-gray-500">
             请假
           </text>
         </view>
         <view class="flex items-center">
-          <view class="mr-1.5 h-2.5 w-2.5 border border-gray-300 rounded-full bg-gray-100" /><text
-            class="text-xs text-gray-500"
-          >
+          <view class="mr-1.5 h-3 w-3 border-2 border-gray-300 rounded-full bg-gray-100" />
+          <text class="text-xs text-gray-500">
             未签到
           </text>
         </view>
