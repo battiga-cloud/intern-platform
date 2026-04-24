@@ -5,6 +5,7 @@ definePage({
   name: 'manual',
   style: {
     navigationBarTitleText: '实习手册',
+    navigationStyle: 'custom',
   },
 })
 
@@ -30,7 +31,7 @@ function contactSupport() {
 
 <template>
   <view class="min-h-screen bg-gray-50 pb-10">
-    <wd-navbar title="实习手册" left-arrow safe-area-inset-top fixed @click-left="handleBack" />
+    <wd-navbar title="实习手册" left-arrow safe-area-inset-top placeholder fixed @click-left="handleBack" />
 
     <view class="px-4 pt-5">
       <view class="relative mb-4 overflow-hidden rounded-2xl bg-[#4D80F0] p-6 shadow-blue-100 shadow-lg">

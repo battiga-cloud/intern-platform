@@ -5,10 +5,11 @@ definePage({
   name: 'class',
   style: {
     navigationBarTitleText: '我的班级',
+    navigationStyle: 'custom',
   },
 })
 
-const message = useMessage()
+const { confirm } = useGlobalDialog()
 
 // 模拟班级数据 (实际应从 Pinia 或后端获取)
 const classInfo = ref({
@@ -25,9 +26,9 @@ const classInfo = ref({
  */
 async function handleUnbind() {
   try {
-    await message.confirm({
+    await confirm({
       title: '退出班级',
-      content: '解绑后你的历史打卡仍会保留，但将无法接收该班级的通知和获取证书，确定退出吗？',
+      msg: '解绑后你的历史打卡仍会保留，但将无法接收该班级的通知和获取证书，确定退出吗？',
       confirmButtonText: '确定解绑',
       cancelButtonText: '我再想想',
     })
@@ -45,17 +46,22 @@ async function handleUnbind() {
   }
   catch (error) {
     // 用户点击取消
+    console.log('用户点击取消', error)
   }
 }
 
 function goHome() {
   uni.switchTab({ url: '/pages/index/index' })
 }
+
+function handleBack() {
+  uni.navigateBack()
+}
 </script>
 
 <template>
-  <view class="min-h-screen bg-gray-50 pb-10">
-    <wd-navbar title="我的班级" safe-area-inset-top placeholder fixed />
+  <view class="bg-gray-50 pb-5">
+    <wd-navbar title="我的班级" safe-area-inset-top placeholder left-arrow fixed @click-left="handleBack" />
 
     <view v-if="classInfo.id" class="animate-fade-in px-4 pt-4">
       <view class="relative mb-6 overflow-hidden rounded-2xl bg-white shadow-sm">
@@ -124,7 +130,7 @@ function goHome() {
       </view>
 
       <view class="px-4">
-        <wd-button type="error" plain block custom-class="rounded-full" @click="handleUnbind">
+        <wd-button type="danger" plain block custom-class="rounded-full" @click="handleUnbind">
           退出当前班级
         </wd-button>
         <text class="mt-4 block text-center text-[10px] text-gray-300">
@@ -133,7 +139,7 @@ function goHome() {
       </view>
     </view>
 
-    <view v-else class="flex flex-col animate-fade-in items-center justify-center px-10 pt-24">
+    <view v-else class="flex flex-col animate-fade-in items-center justify-center px-10">
       <view class="mb-8 h-48 w-48 flex items-center justify-center rounded-full bg-blue-50">
         <wd-icon name="search" size="80px" color="#4D80F0" />
       </view>

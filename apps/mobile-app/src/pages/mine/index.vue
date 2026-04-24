@@ -69,7 +69,7 @@ function handleToggleClass() {
         </view>
       </view>
 
-      <view class="grid grid-cols-3 mt-5 gap-4 rounded-2xl bg-white p-4 pt-2 shadow-sm">
+      <view class="grid grid-cols-3 mt-5 gap-4 rounded-2xl bg-white p-4 pt-3 shadow-sm">
         <view class="flex flex-col items-center border-r border-gray-50">
           <text class="text-2xl text-emerald-500 font-black">
             28
@@ -99,7 +99,7 @@ function handleToggleClass() {
 
     <view class="mx-4 mt-2">
       <view
-        class="flex items-center justify-between border-l-4 border-blue-500 rounded-xl bg-white py-4 pl-2 pr-6 shadow-sm"
+        class="flex items-center justify-between border-l-4 border-blue-500 rounded-xl bg-white py-4 pl-4 pr-6 shadow-sm"
         @click="handleToggleClass"
       >
         <view class="flex items-center">
@@ -108,7 +108,7 @@ function handleToggleClass() {
             <view class="text-sm text-gray-800 font-medium">
               机电工程学院-26届3班
             </view>
-            <view class="mt-0.5 text-xs text-gray-400">
+            <view class="mt-1 text-xs text-gray-400">
               当前激活组织
             </view>
           </view>

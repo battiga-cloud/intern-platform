@@ -5,6 +5,7 @@ definePage({
   name: 'certificate',
   style: {
     navigationBarTitleText: '证书申请',
+    navigationStyle: 'custom',
   },
 })
 
@@ -50,7 +51,7 @@ async function handleApply() {
 
 <template>
   <view class="bg-gray-50 pb-10">
-    <wd-navbar title="证书申请" left-arrow safe-area-inset-top fixed @click-left="handleBack" />
+    <wd-navbar title="证书申请" left-arrow safe-area-inset-top placeholder fixed @click-left="handleBack" />
 
     <view class="px-4 pt-5">
       <view class="mb-4 rounded-2xl bg-white p-5 shadow-sm">
