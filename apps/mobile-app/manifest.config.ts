@@ -10,7 +10,7 @@
 import { defineManifestConfig } from '@uni-helper/vite-plugin-uni-manifest'
 
 export default defineManifestConfig({
-  'name': 'starter',
+  'name': '实习印记',
   'appid': '__UNI__1208592',
   'description': '',
   'versionName': '1.0.0',

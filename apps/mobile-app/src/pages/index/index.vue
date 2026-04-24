@@ -170,11 +170,14 @@ function getStatusColorClass(status: string) {
 
 onMounted(() => {
   // 模拟初始化数据，比如本月 1-3 号的数据
-  // const prefix = `${currentYear.value}-0${currentMonth.value}`
+  const prefix = `${currentYear.value}-0${currentMonth.value}`
   attendanceRecords.value = {
-    // [`${prefix}-01`]: { status: 'WORK', quote: '今天也是元气满满的一天！', isSaved: true },
-    // [`${prefix}-02`]: { status: 'WORK', quote: '需求好多，写不完根本写不完...', isSaved: true },
-    // [`${prefix}-03`]: { status: 'REST' }, // 休息，未填写心情
+    [`${prefix}-01`]: { status: 'WORK', quote: '今天也是元气满满的一天！', isSaved: true },
+    [`${prefix}-02`]: { status: 'WORK', quote: '需求好多，写不完根本写不完...', isSaved: true },
+    [`${prefix}-03`]: { status: 'REST' }, // 休息，未填写心情
+    [`${prefix}-04`]: { status: 'LEAVE' }, // 请假，未填写心情
+    [`${prefix}-05`]: { status: 'WORK', quote: '今天也是元气满满的一天！', isSaved: true },
+    [`${prefix}-06`]: { status: 'LEAVE', quote: '需求好多，写不完根本写不完...' },
   }
 })
 

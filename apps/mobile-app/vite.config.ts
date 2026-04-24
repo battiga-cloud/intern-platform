@@ -26,6 +26,7 @@ export default defineConfig({
       dts: 'src/uni-pages.d.ts',
       subPackages: [
         'src/pages-user',
+        'src/pages-class',
         // 'src/subPages',
         // 'src/subEcharts',
         // 'src/subAsyncEcharts',

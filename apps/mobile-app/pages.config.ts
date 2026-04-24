@@ -49,9 +49,6 @@ export default defineUniPages({
         pagePath: 'pages/index/index',
       },
       {
-        pagePath: 'pages/square/index',
-      },
-      {
         pagePath: 'pages/mine/index',
       },
     ],

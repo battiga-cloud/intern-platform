@@ -15,29 +15,26 @@ const userStore = useUserStore()
 const userInfo = computed(() => userStore.userInfo)
 const showService = ref(false)
 
-/**
- * 编辑资料
- */
-function handleEditProfile() {
-  uni.navigateTo({ url: '/pages-user/settings' })
-}
-
 function handleProfile() {
   uni.navigateTo({ url: '/pages-user/settings' })
 }
 
-async function handleLoginClick() {
+function handleLoginClick() {
   uni.navigateTo({
     url: '/pages/login/index',
   })
+}
+
+function handleToggleClass() {
+  uni.navigateTo({ url: '/pages-class/index' })
 }
 </script>
 
 <template>
   <view class="bg-gray-50 pb-10">
-    <view class="relative from-blue-50 to-gray-50 bg-gradient-to-b px-6 pb-4 pt-20">
+    <view class="relative from-blue-50 to-gray-50 bg-gradient-to-b px-4 pb-4 pt-20">
       <view v-if="userInfo?.id" class="flex items-center justify-between" @click="handleProfile">
-        <view class="flex items-center" @click="handleEditProfile">
+        <view class="flex items-center px-2" @click="handleProfile">
           <view class="h-16 w-16 overflow-hidden border-4 border-white rounded-full bg-white shadow-sm">
             <image
               class="h-full w-full" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
@@ -58,7 +55,7 @@ async function handleLoginClick() {
             </text>
           </view>
         </view>
-        <wd-icon name="arrow-right" size="18px" color="#999" />
+        <wd-icon name="arrow-right" size="18px" color="#999" class="mr-2" />
       </view>
 
       <view v-else class="flex items-center" @click="handleLoginClick">
@@ -101,7 +98,10 @@ async function handleLoginClick() {
     </view>
 
     <view class="mx-4 mt-2">
-      <view class="flex items-center justify-between border-l-4 border-blue-500 rounded-xl bg-white p-4 shadow-sm">
+      <view
+        class="flex items-center justify-between border-l-4 border-blue-500 rounded-xl bg-white py-4 pl-2 pr-6 shadow-sm"
+        @click="handleToggleClass"
+      >
         <view class="flex items-center">
           <wd-icon name="app" size="22px" color="#4D80F0" class="mr-3" />
           <view>
@@ -136,11 +136,11 @@ async function handleLoginClick() {
             <wd-icon name="chat" size="18px" color="#4D80F0" class="mr-2" />
           </template>
         </wd-cell>
-        <wd-cell title="系统设置" is-link to="/pages-user/settings">
+        <!-- <wd-cell title="系统设置" is-link to="/pages-user/settings">
           <template #icon>
             <wd-icon name="setting" size="18px" color="#666" class="mr-2" />
           </template>
-        </wd-cell>
+        </wd-cell> -->
       </wd-cell-group>
     </view>
 
