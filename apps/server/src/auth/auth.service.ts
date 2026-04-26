@@ -136,7 +136,7 @@ export class AuthService {
       }
 
       return this.generateToken({ userId: user.id });
-    } catch (e) {
+    } catch (e: any) {
       throw new BadRequestException(e.message || '微信登录异常');
     }
   }
@@ -213,5 +213,12 @@ export class AuthService {
     } catch (e) {
       throw new UnauthorizedException('Refresh token is invalid or expired');
     }
+  }
+
+  async validateUserById(userId: string) {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { roles: true } // 如果前端需要角色信息，记得在这里 include
+    });
   }
 }

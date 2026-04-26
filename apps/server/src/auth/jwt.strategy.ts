@@ -2,41 +2,45 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-// 注意：如果你的 PrismaService 路径不同，请修改这里的引入路径
-import { PrismaService } from 'nestjs-prisma'; 
+import { PrismaService } from 'nestjs-prisma';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    readonly configService: ConfigService,
-    private readonly prisma: PrismaService, // 注入 Prisma 查库
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
   ) {
     super({
-      // 1. 告诉 Passport 从请求头的 Authorization: Bearer <token> 中提取 token
+      // 1. 从请求头的 Authorization: Bearer <token> 中提取 JWT
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      // 2. 必须校验 token 是否过期
+      // 2. 是否忽略过期时间 (生产环境必须为 false)
       ignoreExpiration: false,
-      // 3. 校验 token 的密钥
+      // 3. 验证签名的密钥，与生成 Token 时保持一致
       secretOrKey: configService.get<string>('JWT_ACCESS_SECRET'),
     });
   }
 
   /**
-   * 当 Token 的签名和有效期校验都通过后，NestJS 会自动调用 validate 方法
-   * 参数 payload 就是我们登录时加密进去的 { userId: user.id }
+   * 验证回调方法
+   * 当 Token 验证通过后，Passport 会自动调用此方法
+   * @param payload 解码后的 JWT 载荷，包含我们在 AuthService 中签发的 userId
    */
-  async validate(payload: { userId: string }) {
-    // 拿着解析出来的 userId 去数据库查这个用户
+  async validate(payload: { userId: string }): Promise<User> {
+    // 拿着 Payload 里的 userId 去数据库查询完整信息
     const user = await this.prisma.user.findUnique({
       where: { id: payload.userId },
+      // 🔴 建议：在此处包含角色信息，这样在接口中使用 @User() 获取到的对象就带权限了
+      include: {
+        roles: true,
+      },
     });
 
-    // 防止 token 没过期，但在数据库里用户已经被管理员删除了的极端情况
+    // 如果用户在数据库中不存在（可能已被删除），则抛出未授权异常
     if (!user) {
-      throw new UnauthorizedException('该用户不存在或已被删除');
+      throw new UnauthorizedException('凭证已失效，请重新登录');
     }
 
-    // 剔除密码，然后返回给 Passport
     const { password, ...result } = user;
     
     // ⚠️ 关键点：这里 return 的 result，会被 NestJS 自动塞进 request.user 里。
