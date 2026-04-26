@@ -11,10 +11,10 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { RegisterDto, LoginDto, UpdatePasswordDto } from './dto/auth-rest.dto';
+import { SignupInput, LoginInput, UpdatePasswordDto } from './dto/auth-rest.dto';
 import { User } from '../common/decorators/user.decorator'; // 假设你已定义此装饰器
 import { ResponseCode, ResponseMessage } from '../common/decorators/response.decorator';
-import { WechatLoginDto } from './dto/wechat-login.input';
+import { WechatLoginInput } from './dto/wechat-login.input';
 
 @Controller('auth')
 export class AuthController {
@@ -27,7 +27,7 @@ export class AuthController {
   @Post('register')
   @ResponseCode(201)
   @ResponseMessage('账号创建成功')
-  async register(@Body() dto: RegisterDto) {
+  async register(@Body() dto: SignupInput) {
     return this.authService.register(dto);
   }
 
@@ -38,14 +38,14 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK) // 登录通常返回 200 而非 201
   @ResponseMessage('登录成功，欢迎回来！')
-  async login(@Body() dto: LoginDto) {
+  async login(@Body() dto: LoginInput) {
     return this.authService.login(dto);
   }
 
   @Post('wechat-login')
   @ResponseMessage('登录成功')
-  async wechatLogin(@Body() wechatLoginDto: WechatLoginDto) {
-    return this.authService.wechatLogin(wechatLoginDto.code);
+  async wechatLogin(@Body() wechatLoginInput: WechatLoginInput) {
+    return this.authService.wechatLogin(wechatLoginInput.code);
   }
 
   /**
@@ -71,8 +71,7 @@ export class AuthController {
   ) {
     return this.authService.updatePassword(
       userId,
-      dto.oldPassword,
-      dto.newPassword,
+      dto
     );
   }
 

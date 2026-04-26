@@ -55,13 +55,7 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
-        // 级联查询出该用户加入的所有状态为 ACTIVE 的班级
-        memberships: {
-          where: { status: 'ACTIVE' },
-          include: { 
-            class: true // 把班级的具体信息（如名字）也查出来
-          }
-        }
+        classMemberships: true, // 对应 Schema 中的 classMemberships ClassMember[]
       }
     });
 
@@ -87,22 +81,19 @@ export class UsersService {
     // 2. 核心：在多对多中间表中写入关系
     const membership = await this.prisma.classMember.upsert({
       where: {
-        userId_classId: { userId, classId },
-      },
-      update: {
-        status: 'ACTIVE', // 恢复激活状态
+        classId_userId: { classId: classId, userId: userId },
       },
       create: {
         userId,
         classId,
-        status: 'ACTIVE',
         role: 'STUDENT',
       },
+      update: {}, 
     });
 
     return { 
       message: `成功加入 ${targetClass.name}`, 
       data: membership 
     };
-  }
+}
 }

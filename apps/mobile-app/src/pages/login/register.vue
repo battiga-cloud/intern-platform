@@ -2,7 +2,7 @@
 import { onLoad } from '@dcloudio/uni-app'
 import { useRequest } from 'alova/client'
 import { reactive, ref } from 'vue'
-import { registerApi, wxLoginApi } from '@/api/auth'
+import { registerApi } from '@/api/auth'
 import { useUserStore } from '@/store/useUserStore'
 
 definePage({
@@ -75,26 +75,6 @@ function handleRegister() {
   submitRegister()
 }
 
-// === 2. 微信小程序一键注册并登录 ===
-const { loading: wxLoading, send: submitWxLogin, onSuccess: onWxSuccess } = useRequest((code: string) => wxLoginApi({ code }), {
-  immediate: false,
-})
-
-onWxSuccess((event: any) => {
-  const res = event.data as API.ApiResponse<API.AuthResult>
-  if (res.code === 200)
-    handleAuthSuccess(res.data!)
-})
-
-function handleWxLogin(e: any) {
-  if (e.detail.errMsg === 'getPhoneNumber:ok') {
-    submitWxLogin(e.detail.code)
-  }
-  else {
-    uni.showToast({ title: '已取消授权', icon: 'none' })
-  }
-}
-
 // === 路由交互 ===
 function goToLogin() {
   uni.navigateBack({ delta: 1 })
@@ -106,8 +86,8 @@ function goBack() {
 </script>
 
 <template>
-  <view class="min-h-screen bg-white px-6 pt-16">
-    <view class="inline-block rounded-full bg-blue-50 p-3 shadow-md transition-transform active:scale-95">
+  <view class="min-h-screen bg-white px-6">
+    <view class="mt-[150rpx] inline-block rounded-full bg-blue-50 p-3 shadow-md transition-transform active:scale-95">
       <wd-icon name="arrow-left" size="24" @click="goBack" />
     </view>
 
@@ -120,27 +100,11 @@ function goBack() {
       </text>
     </view>
 
-    <view class="mb-8">
-      <wd-button
-        type="success" block size="large" open-type="getPhoneNumber" :loading="!!wxLoading"
-        custom-class="rounded-full shadow-lg shadow-green-200" @getphonenumber="handleWxLogin"
-      >
-        <wd-icon name="wechat" size="20" class="mr-2" /> 微信一键授权注册
-      </wd-button>
-    </view>
-
-    <view class="mb-8 flex items-center justify-center">
-      <view class="h-px flex-1 bg-gray-100" />
-      <text class="mx-4 text-xs text-gray-400 tracking-wider">
-        或手动填写信息
-      </text>
-      <view class="h-px flex-1 bg-gray-100" />
-    </view>
     <view class="mb-10 flex flex-col gap-4">
-      <wd-input v-model="form.name" placeholder="有幸知道您的真实姓名吗" prefix-icon="user" clearable />
+      <wd-input v-model="form.name" placeholder="有幸知道您的真实姓名吗" prefix-icon="user" />
       <wd-input
         v-model="form.phone" label="手机号" placeholder="请输入 11 位手机号" type="number" :maxlength="11"
-        prefix-icon="mobile" clearable
+        prefix-icon="mobile"
       />
       <wd-input v-model="form.password" label="设置密码" placeholder="请输入至少6位密码" prefix-icon="lock" show-password />
       <wd-input v-model="confirmPassword" label="确认密码" placeholder="请再次输入密码" prefix-icon="lock" show-password />

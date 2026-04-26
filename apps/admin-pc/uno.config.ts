@@ -1,6 +1,7 @@
 import { defineConfig, transformerDirectives, transformerVariantGroup, presetWind3 } from 'unocss';
 import { presetSoybeanAdmin } from '@sa/uno-preset';
-import { themeVars } from './src/theme/vars';
+// @ts-ignore
+import { themeVars } from './src/theme/vars.ts';
 
 export default defineConfig({
   content: {

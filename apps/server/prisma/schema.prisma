@@ -12,101 +12,385 @@ generator dbml {
   provider = "prisma-dbml-generator"
 }
 
-// 定义用户角色：超级管理员、管理员(平台)、学校管理员、企业管理员和普通用户）
-enum Role {
-  SUPER_ADMIN
-  ADMIN
-  SCHOOL_ADMIN
-  COMPANY_ADMIN
-  USER
-}
+// ==========================================
+// 1. 全局枚举 (Enums)
+// ==========================================
 
-// 定义用户状态：待激活、已激活、已禁用
 enum UserStatus {
-  PENDING   // 老师导入后，学生尚未扫码激活
-  ACTIVE    // 学生已设置密码，正式启用
-  INACTIVE  // 账号禁用
+  PENDING // 待激活
+  ACTIVE // 正常/已激活
+  INACTIVE // 已禁用
 }
 
+enum Sex {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+
+enum MenuType {
+  DIRECTORY // 目录
+  MENU // 菜单
+  BUTTON // 按钮/权限点
+}
+
+enum Method {
+  GET
+  POST
+  PUT
+  PATCH
+  DELETE
+}
+
+// 考勤打卡状态
+enum AttendanceStatus {
+  WORK // 上班
+  REST // 休息
+  LEAVE // 请假
+}
+
+// 任务或报告状态
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+}
+
+// ==========================================
+// 2. 核心底座：RBAC 权限与用户 (System & RBAC)
+// ==========================================
 
 model User {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
+
+  // --- 身份与登录凭证 (Credentials) ---
+  phone    String? @unique // 手机号（可选，但一旦有必须唯一）
+  userName String  @unique // 登录账号（必填且唯一，如 admin123）
+  password String // 哈希加密后的密码
+
+  // --- 用户资料 (Profile) ---
+  name String? // 真实姓名（如 "张三", "John"）。强烈建议在业务层面（如学生认证时）设为必填。
+  // realName String?  // (备选) 如果 name 太宽泛，用 realName 语义最精确
+
+  avatar String? // 头像
+  sex    Sex     @default(UNKNOWN) // 性别
+
+  status UserStatus @default(ACTIVE)
+
+  // 数据隔离：用户所属的机构 (可为空表示自由用户/平台管理员)
+  schoolId     String?
+  school       School?     @relation(fields: [schoolId], references: [id])
+  enterpriseId String?
+  enterprise   Enterprise? @relation(fields: [enterpriseId], references: [id])
+
+  // 关系映射
+  roles             Role[]             @relation("UserRoles")
+  logs              Log[]
+  sentMessages      Message[]          @relation("SentMessages")
+  receivedMessages  Message[]          @relation("ReceivedMessages")
+  classMemberships  ClassMember[]
+  attendances       Attendance[]
+  reports           Report[]
+  feedbacks         Feedback[]
+  assignedTasks     Task[]             @relation("AssignedTasks") // 被分配的任务
+  createdTasks      Task[]             @relation("CreatedTasks") // 发布的任务
+  announcementReads AnnouncementRead[]
+
+  // 新增关系字段
+  receivedEvaluations Evaluation[] @relation("StudentEvaluations") // 作为学生收到的评价
+  givenEvaluations    Evaluation[] @relation("MentorEvaluations") // 作为导师给出的评价
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  phone     String   @unique // 使用手机号作为唯一登录凭证
-  password  String?
-  name      String?
-  status    UserStatus @default(ACTIVE)
-  role      Role @default(USER)
-
-  // 关联到中间表
-  memberships ClassMember[]
-
-  // email     String   @unique
-  posts     Post[]
-
-  // 👇 新增这一行，表示一个用户可以有多条签到记录
-  attendances Attendance[]
 }
 
-// 班级/实习计划表
+model Role {
+  id          String  @id @default(cuid())
+  name        String  @unique // 角色名称 (如：超级管理员、学校管理员)
+  code        String  @unique // 角色编码 (如：SUPER_ADMIN, SCHOOL_ADMIN)
+  description String?
+  sort        Int     @default(0)
+
+  users User[] @relation("UserRoles")
+  menus Menu[] @relation("RoleMenus")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Menu {
+  id       String  @id @default(cuid())
+  parentId String?
+  parent   Menu?   @relation("MenuHierarchy", fields: [parentId], references: [id])
+  children Menu[]  @relation("MenuHierarchy")
+
+  title      String // 菜单名称
+  type       MenuType @default(MENU)
+  path       String? // 路由地址
+  component  String? // 组件路径
+  permission String? // 权限标识 (如 sys:user:add)
+  icon       String?
+  sort       Int      @default(0)
+  isHidden   Boolean  @default(false)
+
+  roles Role[] @relation("RoleMenus")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==========================================
+// 3. 机构域：企业与学校信息 (Organizations)
+// ==========================================
+
+model Enterprise {
+  id          String  @id @default(cuid())
+  name        String  @unique // 企业名称
+  logo        String?
+  description String? @db.Text
+
+  // 联系人信息
+  contactName   String?
+  contactPhone  String?
+  contactWechat String?
+  contactQrCode String? // 微信二维码图片地址
+
+  status Boolean @default(true) // 启用/禁用状态
+
+  users    User[]
+  jobPosts JobPost[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  evaluations Evaluation[] // 企业名下的所有评价记录
+}
+
+model School {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  logo        String?
+  description String? @db.Text
+  status      Boolean @default(true)
+
+  users         User[]
+  classes       Class[]
+  announcements Announcement[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  evaluations Evaluation[] // 本校学生在各企业收到的评价汇总
+}
+
+// ==========================================
+// 4. 业务域：招聘与教学管理 (Business Core)
+// ==========================================
+
+// 企业岗位 (求职类)
+model JobPost {
+  id           String     @id @default(cuid())
+  enterpriseId String
+  enterprise   Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+
+  title       String
+  content     String  @db.Text
+  city        String?
+  salaryRange String? // 薪资范围，如 "100-150/天"
+  isActive    Boolean @default(true) // 是否正在招聘
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 班级管理
 model Class {
-  id        String   @id @default(cuid())
-  name      String   // 例如："机电3班" 或 "腾讯前端实训组"
-  // ... 其他属性
-  
-  members   ClassMember[]
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  name String // 例如 "机电3班"
+  year Int? // 届别，如 2026
+
+  members ClassMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-// 多对多关系中间表
+// 班级成员 (包含学生和教师)
 model ClassMember {
-  id        String   @id @default(cuid())
-  userId    String
-  classId   String
-  
-  // 在当前班级中的角色（比如他是机电3班的普通学生，却是实训组的小组长）
-  role      String   @default("STUDENT") 
-  // 在当前班级中的状态（正常、退出、被管理员移出）
-  status    String   @default("ACTIVE")  
-  joinedAt  DateTime @default(now())
+  id      String @id @default(cuid())
+  classId String
+  class   Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user      User     @relation(fields: [userId], references: [id])
-  class     Class    @relation(fields: [classId], references: [id])
+  role String @default("STUDENT") // STUDENT 或 TEACHER 
 
-  // 联合唯一索引：确保一个学生不能重复加入同一个班级两次
-  @@unique([userId, classId]) 
+  createdAt DateTime @default(now())
+
+  @@unique([classId, userId]) // 一个人在一个班里只能有一条记录
 }
 
+// 学校公告
+model Announcement {
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  title    String
+  content  String @db.Text
 
-// 签到表
+  reads AnnouncementRead[]
+
+  createdAt DateTime @default(now())
+}
+
+// 公告已读记录 (关联学生)
+model AnnouncementRead {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  announcementId String
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  readAt DateTime @default(now())
+
+  @@unique([userId, announcementId])
+}
+
+// ==========================================
+// 5. 实习过程管理 (Internship Management)
+// ==========================================
+
+// 签到打卡记录 (对应前端的首页日历打卡)
 model Attendance {
-  id        String   @id @default(cuid())
-  userId    String
-  classId   String?  // 如果散客允许打卡则为可选，如果必须绑定班级则为必填
-  
-  date      String   // 格式：YYYY-MM-DD
-  status    String   // 枚举：WORK(上班), REST(休息), LEAVE(请假)
-  
-  // 心情语录模块
-  quote     String?  @db.VarChar(200) // 记录的语录文本
-  isQuoteSaved Boolean @default(false) // 标识前端是否点击了"记录此刻"
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date      String // 打卡日期, e.g., "2026-04-15"
+  status    AttendanceStatus // WORK | REST | LEAVE
+  workHours Decimal?         @db.Decimal(4, 1) // 记录工时，例如 8.0
+  quote     String? // 碎碎念/心情记录
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id])
-  
-  // 核心约束：一个学生每天只能有一条打卡记录
-  @@unique([userId, date])
+  @@unique([userId, date]) // 一天只能有一条最终记录
 }
 
-model Post {
-  id        String   @id @default(cuid())
+// 实习任务
+model Task {
+  id       String     @id @default(cuid())
+  title    String
+  content  String     @db.Text
+  status   TaskStatus @default(PENDING)
+  deadline DateTime?
+
+  publisherId String // 任务发布者 (教师/企业管理)
+  publisher   User   @relation("CreatedTasks", fields: [publisherId], references: [id])
+  assigneeId  String // 任务接收者 (实习生)
+  assignee    User   @relation("AssignedTasks", fields: [assigneeId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  published Boolean
-  title     String
-  content   String?
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  String?
+}
+
+// 周报/实习报告
+model Report {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        String // WEEKLY(周报), MONTHLY(月报), FINAL(实习总结)
+  content     String @db.Text
+  attachments Json? // 附件列表，存 JSON 数组
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 问题反馈
+model Feedback {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  content    String  @db.Text
+  reply      String? @db.Text // 管理员回复
+  isResolved Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==========================================
+// 6. 系统通用管理 (System Common)
+// ==========================================
+
+// 站内信/消息管理
+model Message {
+  id      String  @id @default(cuid())
+  title   String
+  content String  @db.Text
+  isRead  Boolean @default(false)
+
+  senderId   String? // 发送者 (为空代表系统消息)
+  sender     User?   @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId String
+  receiver   User    @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+// 操作日志
+model Log {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  ip      String
+  action  String // 操作描述
+  method  Method
+  params  Json? // 请求参数
+  os      String?
+  browser String?
+
+  createdAt DateTime @default(now())
+}
+
+// 系统设置 (KV配置)
+model SystemSetting {
+  key         String  @id // 例如 "system_logo", "allow_register"
+  value       String  @db.Text
+  description String?
+
+  updatedAt DateTime @updatedAt
+}
+
+// 评价表
+model Evaluation {
+  id String @id @default(cuid())
+
+  // 1. 关联实习生 (User)
+  studentId String
+  student   User   @relation("StudentEvaluations", fields: [studentId], references: [id], onDelete: Cascade)
+
+  // 2. 关联评价人/企业导师 (User)
+  mentorId String
+  mentor   User   @relation("MentorEvaluations", fields: [mentorId], references: [id])
+
+  // 3. 关联企业 (Enterprise)
+  enterpriseId String
+  enterprise   Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+
+  // 4. 关联学校 (School) - 冗余存储方便学校端直接统计
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  score   Int // 评分，如 1-5 分
+  content String? @db.Text // 评语
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

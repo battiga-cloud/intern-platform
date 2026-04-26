@@ -103,7 +103,7 @@ function goBack() {
 </script>
 
 <template>
-  <view class="bg-white px-6">
+  <view class="min-h-screen bg-white px-6">
     <view class="mt-[150rpx] inline-block rounded-full bg-blue-50 p-3 shadow-md transition-transform active:scale-95">
       <wd-icon name="arrow-left" size="24" @click="goBack" />
     </view>
@@ -124,31 +124,22 @@ function goBack() {
     </view>
 
     <!-- #ifdef MP-WEIXIN -->
-    <view class="mb-8">
+    <!-- <view class="mb-8">
       <wd-button
         type="success" block size="large" open-type="getPhoneNumber" :loading="!!wxLoading"
         custom-class="rounded-full shadow-lg shadow-green-200" @getphonenumber="handleWxLogin"
       >
         <wd-icon name="wechat" size="20" class="mr-2" /> 微信一键快捷登录
       </wd-button>
-    </view>
+    </view> -->
     <!-- #endif -->
 
-    <!-- <view class="mb-8 flex items-center justify-center">
-      <view class="h-px flex-1 bg-gray-100" />
-      <text class="mx-4 text-xs text-gray-400 tracking-wider">
-        或使用账号密码
-      </text>
-      <view class="h-px flex-1 bg-gray-100" />
-    </view> -->
-
-    <!-- #ifdef H5 -->
+    <!-- #ifdef H5 || MP-WEIXIN -->
     <view class="mb-10 flex flex-col gap-6">
       <wd-input
         v-model="loginForm.phone" placeholder="请输入 11 位手机号" type="number" prefix-icon="mobile" :maxlength="11"
-        clearable
       />
-      <wd-input v-model="loginForm.password" placeholder="请输入登录密码" prefix-icon="lock" show-password clearable />
+      <wd-input v-model="loginForm.password" placeholder="请输入登录密码" prefix-icon="lock" show-password />
     </view>
 
     <wd-button
@@ -160,7 +151,7 @@ function goBack() {
 
     <view class="mt-6 flex justify-between px-2">
       <text class="text-sm text-gray-400 active:opacity-50">
-        忘记密码
+        <!-- 忘记密码 -->
       </text>
       <text class="text-sm text-blue-500 font-medium active:opacity-50" @click="goToRegister">
         没有账号？去注册

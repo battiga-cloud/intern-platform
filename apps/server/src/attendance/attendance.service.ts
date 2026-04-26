@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { AttendanceStatus } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
@@ -27,23 +28,21 @@ export class AttendanceService {
    * 接口 2：Upsert 提交打卡状态和语录
    * 这个接口非常强大，前端切换"状态"或提交"语录"都可以调这个接口
    */
-  async submitAttendance(userId: string, dto: { date: string; status: string; quote?: string; isQuoteSaved?: boolean }) {
+  async submitAttendance(userId: string, dto: { date: string; status: string; quote?: string }) {
     return this.prisma.attendance.upsert({
       where: {
         // 利用联合唯一索引查找当天的记录
         userId_date: { userId, date: dto.date },
       },
       update: {
-        status: dto.status,
+        status: dto.status as AttendanceStatus,
         quote: dto.quote,
-        isQuoteSaved: dto.isQuoteSaved,
       },
       create: {
         userId,
         date: dto.date,
-        status: dto.status,
+        status: dto.status as AttendanceStatus,
         quote: dto.quote,
-        isQuoteSaved: dto.isQuoteSaved ?? false,
       },
     });
   }
@@ -67,7 +66,7 @@ export class AttendanceService {
       result[r.date] = {
         status: r.status,
         quote: r.quote,
-        isSaved: r.isQuoteSaved
+        isSaved: !!r.quote
       };
     });
     return result;

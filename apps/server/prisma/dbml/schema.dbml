@@ -4,73 +4,264 @@
 
 Table User {
   id String [pk]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  phone String [unique, not null]
+  phone String [unique]
+  userName String [unique, not null]
   password String [not null]
   name String
+  avatar String
+  sex Sex [not null, default: 'UNKNOWN']
   status UserStatus [not null, default: 'ACTIVE']
-  role Role [not null, default: 'USER']
-  memberships ClassMember [not null]
-  posts Post [not null]
+  schoolId String
+  school School
+  enterpriseId String
+  enterprise Enterprise
+  roles Role [not null]
+  logs Log [not null]
+  sentMessages Message [not null]
+  receivedMessages Message [not null]
+  classMemberships ClassMember [not null]
   attendances Attendance [not null]
+  reports Report [not null]
+  feedbacks Feedback [not null]
+  assignedTasks Task [not null]
+  createdTasks Task [not null]
+  announcementReads AnnouncementRead [not null]
+  receivedEvaluations Evaluation [not null]
+  givenEvaluations Evaluation [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Table Role {
+  id String [pk]
+  name String [unique, not null]
+  code String [unique, not null]
+  description String
+  sort Int [not null, default: 0]
+  users User [not null]
+  menus Menu [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Table Menu {
+  id String [pk]
+  parentId String
+  parent Menu
+  children Menu [not null]
+  title String [not null]
+  type MenuType [not null, default: 'MENU']
+  path String
+  component String
+  permission String
+  icon String
+  sort Int [not null, default: 0]
+  isHidden Boolean [not null, default: false]
+  roles Role [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Table Enterprise {
+  id String [pk]
+  name String [unique, not null]
+  logo String
+  description String
+  contactName String
+  contactPhone String
+  contactWechat String
+  contactQrCode String
+  status Boolean [not null, default: true]
+  users User [not null]
+  jobPosts JobPost [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  evaluations Evaluation [not null]
+}
+
+Table School {
+  id String [pk]
+  name String [unique, not null]
+  logo String
+  description String
+  status Boolean [not null, default: true]
+  users User [not null]
+  classes Class [not null]
+  announcements Announcement [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  evaluations Evaluation [not null]
+}
+
+Table JobPost {
+  id String [pk]
+  enterpriseId String [not null]
+  enterprise Enterprise [not null]
+  title String [not null]
+  content String [not null]
+  city String
+  salaryRange String
+  isActive Boolean [not null, default: true]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
 }
 
 Table Class {
   id String [pk]
+  schoolId String [not null]
+  school School [not null]
   name String [not null]
+  year Int
   members ClassMember [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
 }
 
 Table ClassMember {
   id String [pk]
-  userId String [not null]
   classId String [not null]
-  role String [not null, default: 'STUDENT']
-  status String [not null, default: 'ACTIVE']
-  joinedAt DateTime [default: `now()`, not null]
-  user User [not null]
   class Class [not null]
+  userId String [not null]
+  user User [not null]
+  role String [not null, default: 'STUDENT']
+  createdAt DateTime [default: `now()`, not null]
 
   indexes {
-    (userId, classId) [unique]
+    (classId, userId) [unique]
+  }
+}
+
+Table Announcement {
+  id String [pk]
+  schoolId String [not null]
+  school School [not null]
+  title String [not null]
+  content String [not null]
+  reads AnnouncementRead [not null]
+  createdAt DateTime [default: `now()`, not null]
+}
+
+Table AnnouncementRead {
+  id String [pk]
+  userId String [not null]
+  user User [not null]
+  announcementId String [not null]
+  announcement Announcement [not null]
+  readAt DateTime [default: `now()`, not null]
+
+  indexes {
+    (userId, announcementId) [unique]
   }
 }
 
 Table Attendance {
   id String [pk]
   userId String [not null]
-  classId String
+  user User [not null]
   date String [not null]
-  status String [not null]
+  status AttendanceStatus [not null]
+  workHours Decimal
   quote String
-  isQuoteSaved Boolean [not null, default: false]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  user User [not null]
 
   indexes {
     (userId, date) [unique]
   }
 }
 
-Table Post {
+Table Task {
   id String [pk]
+  title String [not null]
+  content String [not null]
+  status TaskStatus [not null, default: 'PENDING']
+  deadline DateTime
+  publisherId String [not null]
+  publisher User [not null]
+  assigneeId String [not null]
+  assignee User [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  published Boolean [not null]
-  title String [not null]
-  content String
-  author User
-  authorId String
 }
 
-Enum Role {
-  SUPER_ADMIN
-  ADMIN
-  SCHOOL_ADMIN
-  COMPANY_ADMIN
-  USER
+Table Report {
+  id String [pk]
+  userId String [not null]
+  user User [not null]
+  type String [not null]
+  content String [not null]
+  attachments Json
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Table Feedback {
+  id String [pk]
+  userId String [not null]
+  user User [not null]
+  content String [not null]
+  reply String
+  isResolved Boolean [not null, default: false]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Table Message {
+  id String [pk]
+  title String [not null]
+  content String [not null]
+  isRead Boolean [not null, default: false]
+  senderId String
+  sender User
+  receiverId String [not null]
+  receiver User [not null]
+  createdAt DateTime [default: `now()`, not null]
+}
+
+Table Log {
+  id String [pk]
+  userId String [not null]
+  user User [not null]
+  ip String [not null]
+  action String [not null]
+  method Method [not null]
+  params Json
+  os String
+  browser String
+  createdAt DateTime [default: `now()`, not null]
+}
+
+Table SystemSetting {
+  key String [pk]
+  value String [not null]
+  description String
+  updatedAt DateTime [not null]
+}
+
+Table Evaluation {
+  id String [pk]
+  studentId String [not null]
+  student User [not null]
+  mentorId String [not null]
+  mentor User [not null]
+  enterpriseId String [not null]
+  enterprise Enterprise [not null]
+  schoolId String [not null]
+  school School [not null]
+  score Int [not null]
+  content String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Table UserRoles {
+  rolesId String [ref: > Role.id]
+  usersId String [ref: > User.id]
+}
+
+Table RoleMenus {
+  menusId String [ref: > Menu.id]
+  rolesId String [ref: > Role.id]
 }
 
 Enum UserStatus {
@@ -79,10 +270,79 @@ Enum UserStatus {
   INACTIVE
 }
 
-Ref: ClassMember.userId > User.id
+Enum Sex {
+  MALE
+  FEMALE
+  UNKNOWN
+}
 
-Ref: ClassMember.classId > Class.id
+Enum MenuType {
+  DIRECTORY
+  MENU
+  BUTTON
+}
 
-Ref: Attendance.userId > User.id
+Enum Method {
+  GET
+  POST
+  PUT
+  PATCH
+  DELETE
+}
 
-Ref: Post.authorId > User.id
+Enum AttendanceStatus {
+  WORK
+  REST
+  LEAVE
+}
+
+Enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+}
+
+Ref: User.schoolId > School.id
+
+Ref: User.enterpriseId > Enterprise.id
+
+Ref: Menu.parentId - Menu.id
+
+Ref: JobPost.enterpriseId > Enterprise.id [delete: Cascade]
+
+Ref: Class.schoolId > School.id [delete: Cascade]
+
+Ref: ClassMember.classId > Class.id [delete: Cascade]
+
+Ref: ClassMember.userId > User.id [delete: Cascade]
+
+Ref: Announcement.schoolId > School.id [delete: Cascade]
+
+Ref: AnnouncementRead.userId > User.id [delete: Cascade]
+
+Ref: AnnouncementRead.announcementId > Announcement.id [delete: Cascade]
+
+Ref: Attendance.userId > User.id [delete: Cascade]
+
+Ref: Task.publisherId > User.id
+
+Ref: Task.assigneeId > User.id
+
+Ref: Report.userId > User.id [delete: Cascade]
+
+Ref: Feedback.userId > User.id [delete: Cascade]
+
+Ref: Message.senderId > User.id
+
+Ref: Message.receiverId > User.id
+
+Ref: Log.userId > User.id [delete: Cascade]
+
+Ref: Evaluation.studentId > User.id [delete: Cascade]
+
+Ref: Evaluation.mentorId > User.id [delete: Cascade]
+
+Ref: Evaluation.enterpriseId > Enterprise.id [delete: Cascade]
+
+Ref: Evaluation.schoolId > School.id [delete: Cascade]

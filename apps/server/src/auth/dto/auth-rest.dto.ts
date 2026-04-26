@@ -1,26 +1,36 @@
-import { IsNotEmpty, MinLength, IsString, Matches } from 'class-validator';
+import { IsNotEmpty, MinLength, IsString, Matches, IsOptional } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
-// 简易的中国大陆手机号正则表达式
-const phoneReg = /^1[3-9]\d{9}$/;
+export class SignupInput {
+  // @Matches(phoneReg, { message: '请输入正确的11位手机号' })
+  // phone: string;
 
-export class RegisterDto {
-  @Matches(phoneReg, { message: '请输入正确的11位手机号' })
-  phone: string;
+  @ApiProperty({ description: '注册账号（支持手机号或自定义用户名）' })
+  @IsNotEmpty({ message: '账号不能为空' })
+  @IsString()
+  account: string; // 统一接收前端传来的标识
 
+  @ApiProperty({ description: '设置密码' })
   @IsNotEmpty({ message: '密码不能为空' })
-  @MinLength(6, { message: '密码长度不能少于6位' })
+  @MinLength(6, { message: '密码至少为6位' })
   password: string;
 
+  @ApiProperty({ description: '用户真实姓名' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({ message: '姓名不能为空' })
-  name: string;
+  name?: string;
 }
 
-export class LoginDto {
-  @Matches(phoneReg, { message: '请输入正确的11位手机号' })
-  phone: string;
+export class LoginInput {
+  @ApiProperty({ description: '手机号或用户名' })
+  @IsNotEmpty({ message: '请输入手机号或账号' })
+  @IsString()
+  account: string; // 统一接收手机号或账号
 
+  @ApiProperty({ description: '登录密码' })
   @IsNotEmpty({ message: '密码不能为空' })
+  @IsString()
+  @MinLength(6, { message: '密码至少为6位' })
   password: string;
 }
 

@@ -391,7 +391,7 @@ onMounted(() => {
                   custom-class="bg-gray-100 rounded-lg border-0 text-sm indent-6" prefix-icon="refresh" auto-height
                 />
                 <view
-                  class="absolute left-2 top-2 z-10 p-1 transition-transform duration-300 active:rotate-180"
+                  class="absolute left-2 top-[22px] z-10 p-1 transition-transform duration-300 -translate-y-1/2 active:rotate-180"
                   @click="refreshQuote"
                 >
                   <wd-icon name="refresh" size="18px" color="#4D80F0" />

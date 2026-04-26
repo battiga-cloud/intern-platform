@@ -11,7 +11,7 @@ export function fetchLogin(userName: string, password: string) {
     url: '/auth/login',
     method: 'post',
     data: {
-      userName,
+      account: userName,
       password
     }
   });
