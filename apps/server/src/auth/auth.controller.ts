@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { SignupInput, LoginInput, UpdatePasswordDto } from './dto/auth-rest.dto';
+import { SignupInput, LoginInput, UpdatePasswordDto, RefreshTokenInput } from './dto/auth-rest.dto';
 import { User } from '../common/decorators/user.decorator'; // 假设你已定义此装饰器
 import { ResponseCode, ResponseMessage } from '../common/decorators/response.decorator';
 import { WechatLoginInput } from './dto/wechat-login.input';
@@ -81,7 +81,7 @@ export class AuthController {
    */
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)
-  async refreshToken(@Body('refreshToken') token: string) {
-    return this.authService.refreshToken(token);
+  async refreshToken(@Body() dto: RefreshTokenInput) {
+    return this.authService.refreshToken(dto.refreshToken);
   }
 }

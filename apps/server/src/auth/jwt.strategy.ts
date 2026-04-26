@@ -26,7 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * 当 Token 验证通过后，Passport 会自动调用此方法
    * @param payload 解码后的 JWT 载荷，包含我们在 AuthService 中签发的 userId
    */
-  async validate(payload: { userId: string }): Promise<User> {
+  async validate(payload: { userId: string }): Promise<Partial<User>> {
     // 拿着 Payload 里的 userId 去数据库查询完整信息
     const user = await this.prisma.user.findUnique({
       where: { id: payload.userId },

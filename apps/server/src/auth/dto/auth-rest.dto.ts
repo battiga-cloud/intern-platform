@@ -1,4 +1,4 @@
-import { IsNotEmpty, MinLength, IsString, Matches, IsOptional } from 'class-validator';
+import { IsNotEmpty, MinLength, IsString, Matches, IsOptional, IsJWT } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SignupInput {
@@ -35,9 +35,18 @@ export class LoginInput {
 }
 
 export class UpdatePasswordDto {
+  @ApiProperty({ description: '旧密码' })
   @IsNotEmpty({ message: '旧密码不能为空' })
   oldPassword: string;
 
+  @ApiProperty({ description: '新密码' })
   @IsNotEmpty({ message: '新密码不能为空' })
   newPassword: string;
+}
+
+export class RefreshTokenInput {
+  @ApiProperty({ description: '刷新令牌' })
+  @IsNotEmpty({ message: '刷新令牌不能为空' })
+  @IsJWT()
+  refreshToken: string;
 }

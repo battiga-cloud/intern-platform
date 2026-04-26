@@ -74,5 +74,14 @@ export const generatedRoutes: GeneratedRoute[] = [
       constant: true,
       hideInMenu: true
     }
+  },
+  {
+    name: 'systems',
+    path: '/systems',
+    component: 'layout.base$view.systems',
+    meta: {
+      title: 'systems',
+      i18nKey: 'route.systems'
+    }
   }
 ];
