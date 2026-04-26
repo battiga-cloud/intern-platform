@@ -357,6 +357,7 @@ declare global {
   const watchWithFilter: typeof import('@vueuse/core')['watchWithFilter']
   const whenever: typeof import('@vueuse/core')['whenever']
   const withConfigType: typeof import('./api/createApis')['withConfigType']
+  const wxLoginApi: typeof import('./api/auth')['wxLoginApi']
 }
 // for type re-export
 declare global {
@@ -720,5 +721,6 @@ declare module 'vue' {
     readonly watchWithFilter: UnwrapRef<typeof import('@vueuse/core')['watchWithFilter']>
     readonly whenever: UnwrapRef<typeof import('@vueuse/core')['whenever']>
     readonly withConfigType: UnwrapRef<typeof import('./api/createApis')['withConfigType']>
+    readonly wxLoginApi: UnwrapRef<typeof import('./api/auth')['wxLoginApi']>
   }
 }
