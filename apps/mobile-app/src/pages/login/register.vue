@@ -83,7 +83,7 @@ function goBack() {
         创建账号
       </text>
       <text class="block text-sm text-gray-400">
-        加入实习宇宙，开启职场第一步
+        加入实习印记，开启职场第一步
       </text>
     </view>
 

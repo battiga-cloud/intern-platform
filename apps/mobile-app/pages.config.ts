@@ -16,7 +16,7 @@ export default defineUniPages({
     // 导航栏配置
     navigationBarBackgroundColor: '@navBgColor',
     navigationBarTextStyle: '@navTxtStyle',
-    navigationBarTitleText: '实习宇宙',
+    navigationBarTitleText: '实习印记',
 
     // 页面背景配置
     backgroundColor: '@bgColor',

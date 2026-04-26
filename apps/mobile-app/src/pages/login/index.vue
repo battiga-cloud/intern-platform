@@ -82,7 +82,7 @@ function goBack() {
         欢迎登录
       </text>
       <text class="block text-sm text-gray-400">
-        实习宇宙平台
+        实习印记平台
       </text>
     </view>
 

@@ -121,6 +121,11 @@ function handleToggleClass() {
 
     <view class="mx-4 mt-4">
       <wd-cell-group border rounded>
+        <wd-cell title="我的实习" is-link to="/pages-user/manual">
+          <template #icon>
+            <wd-icon name="setting" size="18px" color="#666" class="mr-2" />
+          </template>
+        </wd-cell>
         <wd-cell title="实习手册" is-link to="/pages-user/manual">
           <template #icon>
             <wd-icon name="edit-outline" size="18px" color="#10b981" class="mr-2" />
@@ -136,11 +141,6 @@ function handleToggleClass() {
             <wd-icon name="chat" size="18px" color="#4D80F0" class="mr-2" />
           </template>
         </wd-cell>
-        <!-- <wd-cell title="系统设置" is-link to="/pages-user/settings">
-          <template #icon>
-            <wd-icon name="setting" size="18px" color="#666" class="mr-2" />
-          </template>
-        </wd-cell> -->
       </wd-cell-group>
     </view>
 

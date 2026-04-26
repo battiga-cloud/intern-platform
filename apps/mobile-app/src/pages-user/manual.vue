@@ -40,7 +40,7 @@ function contactSupport() {
             你好，星际实习生！
           </text>
           <text class="mt-2 block text-xs text-blue-100 leading-relaxed">
-            这是你的职场生存指南，助你在实习宇宙中平稳飞行。
+            这是你的职场生存指南，助你在实习印记中平稳飞行。
           </text>
         </view>
         <wd-icon name=" believe" size="80px" color="rgba(255,255,255,0.1)" custom-class="absolute -right-4 -bottom-4" />

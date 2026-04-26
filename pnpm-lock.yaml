@@ -566,7 +566,7 @@ importers:
         version: 4.13.0(graphql@16.7.1)
       '@devoxa/prisma-relay-cursor-connection':
         specifier: 2.2.3
-        version: 2.2.3(@prisma/client@5.16.1(prisma@5.0.0))
+        version: 2.2.3(@prisma/client@5.16.1(prisma@5.16.1))
       '@nestjs/apollo':
         specifier: 12.0.7
         version: 12.0.7(@apollo/server@4.13.0(graphql@16.7.1))(@nestjs/common@10.1.0(class-transformer@0.5.1)(class-validator@0.13.2)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.1.0)(@nestjs/graphql@12.0.8(@nestjs/common@10.1.0(class-transformer@0.5.1)(class-validator@0.13.2)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.1.0)(class-transformer@0.5.1)(class-validator@0.13.2)(graphql@16.7.1)(reflect-metadata@0.1.13))(graphql@16.7.1)
@@ -596,7 +596,7 @@ importers:
         version: 7.1.2(@nestjs/common@10.1.0(class-transformer@0.5.1)(class-validator@0.13.2)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.1.0)(class-transformer@0.5.1)(class-validator@0.13.2)(reflect-metadata@0.1.13)
       '@prisma/client':
         specifier: ^5.0.0
-        version: 5.16.1(prisma@5.0.0)
+        version: 5.16.1(prisma@5.16.1)
       bcrypt:
         specifier: 5.1.1
         version: 5.1.1
@@ -617,7 +617,7 @@ importers:
         version: 2.0.0(graphql@16.7.1)
       nestjs-prisma:
         specifier: 0.22.0-dev.0
-        version: 0.22.0-dev.0(@nestjs/common@10.1.0(class-transformer@0.5.1)(class-validator@0.13.2)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@prisma/client@5.16.1(prisma@5.0.0))(chokidar@3.5.3)(prisma@5.0.0)
+        version: 0.22.0-dev.0(@nestjs/common@10.1.0(class-transformer@0.5.1)(class-validator@0.13.2)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@prisma/client@5.16.1(prisma@5.16.1))(chokidar@3.5.3)(prisma@5.16.1)
       passport:
         specifier: 0.6.0
         version: 0.6.0
@@ -689,8 +689,8 @@ importers:
         specifier: 2.8.8
         version: 2.8.8
       prisma:
-        specifier: 5.0.0
-        version: 5.0.0
+        specifier: 5.16.1
+        version: 5.16.1
       prisma-dbml-generator:
         specifier: 0.11.0-dev.0
         version: 0.11.0-dev.0
@@ -3794,23 +3794,35 @@ packages:
   '@prisma/debug@4.13.0':
     resolution: {integrity: sha512-JrltTewF/paRb5mcM5OvcEi9DtdX0sINOAswruxKQrwOLA7Phqb52OfY38MIzGrsrJ8iUGVqQ5bpYZYpxOGCsQ==}
 
+  '@prisma/debug@5.16.1':
+    resolution: {integrity: sha512-JsNgZAg6BD9RInLSrg7ZYzo11N7cVvYArq3fHGSD89HSgtN0VDdjV6bib7YddbcO6snzjchTiLfjeTqBjtArVQ==}
+
   '@prisma/engine-core@4.13.0':
     resolution: {integrity: sha512-D+jooGRXKAZcsBanhvFhqXMvNEiNaP+OaOvFOM/eKQQXM0FwtKc27l7mQFv4dd/zOufr5T+fJyrTTQhWyV8oFg==}
+
+  '@prisma/engines-version@5.16.0-24.34ace0eb2704183d2c05b60b52fba5c43c13f303':
+    resolution: {integrity: sha512-HkT2WbfmFZ9WUPyuJHhkiADxazHg8Y4gByrTSVeb3OikP6tjQ7txtSUGu9OBOBH0C13dPKN2qqH12xKtHu/Hiw==}
 
   '@prisma/engines@4.13.0':
     resolution: {integrity: sha512-HrniowHRZXHuGT9XRgoXEaP2gJLXM5RMoItaY2PkjvuZ+iHc0Zjbm/302MB8YsPdWozAPHHn+jpFEcEn71OgPw==}
 
-  '@prisma/engines@5.0.0':
-    resolution: {integrity: sha512-kyT/8fd0OpWmhAU5YnY7eP31brW1q1YrTGoblWrhQJDiN/1K+Z8S1kylcmtjqx5wsUGcP1HBWutayA/jtyt+sg==}
+  '@prisma/engines@5.16.1':
+    resolution: {integrity: sha512-KkyF3eIUtBIyp5A/rJHCtwQO18OjpGgx18PzjyGcJDY/+vNgaVyuVd+TgwBgeq6NLdd1XMwRCI+58vinHsAdfA==}
 
   '@prisma/fetch-engine@4.13.0':
     resolution: {integrity: sha512-khMMm3I8nMUgwd7DoM1wBFjMKn/Z5PZF27EMQGPtquM1nRt601blJbep0qodXR7oHioQolCK8gfbw5Hfdml1mg==}
+
+  '@prisma/fetch-engine@5.16.1':
+    resolution: {integrity: sha512-oOkjaPU1lhcA/Rvr4GVfd1NLJBwExgNBE36Ueq7dr71kTMwy++a3U3oLd2ZwrV9dj9xoP6LjCcky799D9nEt4w==}
 
   '@prisma/generator-helper@4.13.0':
     resolution: {integrity: sha512-Zx9rtbsEIU/9DKnGRvmjLdyeyhzeeXNFp1alkRh1w//rQ5jTcobiay/jU4Qo+EQOs2bnWEfUeiBoOjfaysdLNg==}
 
   '@prisma/get-platform@4.13.0':
     resolution: {integrity: sha512-HWBgQNpRi1qEXj24w/qsWCpTW4vKP2/pdiYTyl2SSEVoK4o5izHUt0PQzNl5St5CGr4SDcSyi0C3fXINd46c6A==}
+
+  '@prisma/get-platform@5.16.1':
+    resolution: {integrity: sha512-R4IKnWnMkR2nUAbU5gjrPehdQYUUd7RENFD2/D+xXTNhcqczp0N+WEGQ3ViyI3+6mtVcjjNIMdnUTNyu3GxIgA==}
 
   '@prisma/internals@4.13.0':
     resolution: {integrity: sha512-TxdTQFJO0zMCx0Tgb6UZt3WsVt+etvtWx+LaSWf4Pk1ECGte5w+9iiuypwjiLortSn7qm6n5KVWTXFOnnZr4Ww==}
@@ -10860,8 +10872,8 @@ packages:
     resolution: {integrity: sha512-IZzJkSEtVeRVrxYLf2k9ZQBDu72RgIcjESu0jpjCHee3H15Yf3VtuZ1bZoNrc9gnTGvBuYCxlfzJ05+UIwUklw==}
     hasBin: true
 
-  prisma@5.0.0:
-    resolution: {integrity: sha512-KYWk83Fhi1FH59jSpavAYTt2eoMVW9YKgu8ci0kuUnt6Dup5Qy47pcB4/TLmiPAbhGrxxSz7gsSnJcCmkyPANA==}
+  prisma@5.16.1:
+    resolution: {integrity: sha512-Z1Uqodk44diztImxALgJJfNl2Uisl9xDRvqybMKEBYJLNKNhDfAHf+ZIJbZyYiBhLMbKU9cYGdDVG5IIXEnL2Q==}
     engines: {node: '>=16.13'}
     hasBin: true
 
@@ -15447,9 +15459,9 @@ snapshots:
       - ts-node
       - vue
 
-  '@devoxa/prisma-relay-cursor-connection@2.2.3(@prisma/client@5.16.1(prisma@5.0.0))':
+  '@devoxa/prisma-relay-cursor-connection@2.2.3(@prisma/client@5.16.1(prisma@5.16.1))':
     dependencies:
-      '@prisma/client': 5.16.1(prisma@5.0.0)
+      '@prisma/client': 5.16.1(prisma@5.16.1)
       graphql-fields: 2.0.3
 
   '@docsearch/css@4.6.2': {}
@@ -17292,9 +17304,9 @@ snapshots:
 
   '@polka/url@1.0.0-next.29': {}
 
-  '@prisma/client@5.16.1(prisma@5.0.0)':
+  '@prisma/client@5.16.1(prisma@5.16.1)':
     optionalDependencies:
-      prisma: 5.0.0
+      prisma: 5.16.1
 
   '@prisma/debug@4.13.0':
     dependencies:
@@ -17303,6 +17315,8 @@ snapshots:
       strip-ansi: 6.0.1
     transitivePeerDependencies:
       - supports-color
+
+  '@prisma/debug@5.16.1': {}
 
   '@prisma/engine-core@4.13.0':
     dependencies:
@@ -17324,9 +17338,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@prisma/engines-version@5.16.0-24.34ace0eb2704183d2c05b60b52fba5c43c13f303': {}
+
   '@prisma/engines@4.13.0': {}
 
-  '@prisma/engines@5.0.0': {}
+  '@prisma/engines@5.16.1':
+    dependencies:
+      '@prisma/debug': 5.16.1
+      '@prisma/engines-version': 5.16.0-24.34ace0eb2704183d2c05b60b52fba5c43c13f303
+      '@prisma/fetch-engine': 5.16.1
+      '@prisma/get-platform': 5.16.1
 
   '@prisma/fetch-engine@4.13.0':
     dependencies:
@@ -17351,6 +17372,12 @@ snapshots:
       - encoding
       - supports-color
 
+  '@prisma/fetch-engine@5.16.1':
+    dependencies:
+      '@prisma/debug': 5.16.1
+      '@prisma/engines-version': 5.16.0-24.34ace0eb2704183d2c05b60b52fba5c43c13f303
+      '@prisma/get-platform': 5.16.1
+
   '@prisma/generator-helper@4.13.0':
     dependencies:
       '@prisma/debug': 4.13.0
@@ -17374,6 +17401,10 @@ snapshots:
       ts-pattern: 4.2.2
     transitivePeerDependencies:
       - supports-color
+
+  '@prisma/get-platform@5.16.1':
+    dependencies:
+      '@prisma/debug': 5.16.1
 
   '@prisma/internals@4.13.0':
     dependencies:
@@ -25552,14 +25583,14 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  nestjs-prisma@0.22.0-dev.0(@nestjs/common@10.1.0(class-transformer@0.5.1)(class-validator@0.13.2)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@prisma/client@5.16.1(prisma@5.0.0))(chokidar@3.5.3)(prisma@5.0.0):
+  nestjs-prisma@0.22.0-dev.0(@nestjs/common@10.1.0(class-transformer@0.5.1)(class-validator@0.13.2)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@prisma/client@5.16.1(prisma@5.16.1))(chokidar@3.5.3)(prisma@5.16.1):
     dependencies:
       '@angular-devkit/core': 13.3.11(chokidar@3.5.3)
       '@angular-devkit/schematics': 13.3.11(chokidar@3.5.3)
       '@nestjs/common': 10.1.0(class-transformer@0.5.1)(class-validator@0.13.2)(reflect-metadata@0.1.13)(rxjs@7.8.1)
-      '@prisma/client': 5.16.1(prisma@5.0.0)
+      '@prisma/client': 5.16.1(prisma@5.16.1)
       '@schematics/angular': 13.3.11(chokidar@3.5.3)
-      prisma: 5.0.0
+      prisma: 5.16.1
     transitivePeerDependencies:
       - chokidar
 
@@ -26418,9 +26449,9 @@ snapshots:
       - encoding
       - supports-color
 
-  prisma@5.0.0:
+  prisma@5.16.1:
     dependencies:
-      '@prisma/engines': 5.0.0
+      '@prisma/engines': 5.16.1
 
   process-nextick-args@2.0.1: {}
 

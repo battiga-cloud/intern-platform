@@ -13,6 +13,6 @@ export class AttendanceController {
     const studentId = req.user.sub; 
     const { location, mood } = body;
 
-    return this.attendanceService.signIn(studentId, location, mood);
+    // return this.attendanceService.signIn(studentId, location, mood);
   }
 }
