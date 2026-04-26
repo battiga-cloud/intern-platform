@@ -34,7 +34,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   phone     String   @unique // 使用手机号作为唯一登录凭证
-  password  String
+  password  String?
   name      String?
   status    UserStatus @default(ACTIVE)
   role      Role @default(USER)

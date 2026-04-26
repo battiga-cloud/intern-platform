@@ -122,7 +122,7 @@ function goBack() {
 
     <view class="mb-8">
       <wd-button
-        type="success" block size="large" open-type="getPhoneNumber" :loading="wxLoading"
+        type="success" block size="large" open-type="getPhoneNumber" :loading="!!wxLoading"
         custom-class="rounded-full shadow-lg shadow-green-200" @getphonenumber="handleWxLogin"
       >
         <wd-icon name="wechat" size="20" class="mr-2" /> 微信一键授权注册
@@ -147,7 +147,7 @@ function goBack() {
     </view>
 
     <wd-button
-      type="primary" block size="large" :loading="loading"
+      type="primary" block size="large" :loading="!!loading"
       custom-class="rounded-full shadow-lg shadow-blue-200" @click="handleRegister"
     >
       注册并登录

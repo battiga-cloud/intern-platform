@@ -14,6 +14,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { RegisterDto, LoginDto, UpdatePasswordDto } from './dto/auth-rest.dto';
 import { User } from '../common/decorators/user.decorator'; // 假设你已定义此装饰器
 import { ResponseCode, ResponseMessage } from '../common/decorators/response.decorator';
+import { WechatLoginDto } from './dto/wechat-login.input';
 
 @Controller('auth')
 export class AuthController {
@@ -39,6 +40,12 @@ export class AuthController {
   @ResponseMessage('登录成功，欢迎回来！')
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Post('wechat-login')
+  @ResponseMessage('登录成功')
+  async wechatLogin(@Body() wechatLoginDto: WechatLoginDto) {
+    return this.authService.wechatLogin(wechatLoginDto.code);
   }
 
   /**
