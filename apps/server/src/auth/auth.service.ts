@@ -1,9 +1,10 @@
 import { PrismaService } from 'nestjs-prisma';
-import { User } from '@prisma/client';
+import { User, UserStatus } from '@prisma/client';
 import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  ConflictException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -12,7 +13,8 @@ import axios from 'axios';
 import { PasswordService } from './password.service';
 import { Token } from './models/token.model';
 import { SecurityConfig } from '../common/configs/config.interface';
-import { SignupInput, LoginInput, UpdatePasswordDto } from './dto/auth-rest.dto';
+import { SignupInput, LoginInput, UpdatePasswordDto, WechatPhoneLoginInput } from './dto/auth-rest.dto';
+import { ImportUsersDto } from 'src/users/dto/user-rest.dto';
 
 @Injectable()
 export class AuthService {
@@ -27,117 +29,157 @@ export class AuthService {
   ) {}
 
   /**
-   * 注册逻辑 (支持手机号与用户名)
+   * 核心注册逻辑：支持自注册并分配默认角色
    */
   async register(dto: SignupInput) {
-    // 假设前端统一传入 account 字段
     const { account, password, name } = dto;
-    
-    // 1. 判断输入是否为 11 位手机号
     const isPhone = /^1[3-9]\d{9}$/.test(account);
 
-    // 2. 防重校验：判断手机号或用户名是否被占用
+    // 1. 防重校验
     const existingUser = await this.prisma.user.findFirst({
-      where: {
-        OR: [
-          { phone: account },
-          { userName: account },
-        ],
-      },
+      where: { OR: [{ phone: account }, { userName: account }] },
     });
-
     if (existingUser) {
-      throw new BadRequestException('该手机号或账号已被注册');
+      throw new ConflictException('该手机号或账号已被注册');
     }
+
+    // 2. 获取默认角色 (假设系统中已存在 code 为 STUDENT 的角色)
+    // 如果没有这个角色，会抛出错误，防止创建出“无权限孤儿账号”
+    const defaultRole = await this.prisma.role.findUnique({
+      where: { code: 'STUDENT' }, 
+    });
 
     // 3. 密码加密
     const hashedPassword = await this.passwordService.hashPassword(password);
 
-    // 4. 落库：分离 userName 与 phone
+    // 4. 创建用户并关联角色
     return this.prisma.user.create({
       data: {
-        userName: account, // 必定存入 userName 以保证必填和唯一
-        phone: isPhone ? account : null, // 仅在是手机号时存入
+        userName: account,
+        phone: isPhone ? account : null,
         password: hashedPassword,
-        name: name || (isPhone ? `用户_${account.slice(-4)}` : account), // 真实姓名兜底
+        name: name || (isPhone ? `学生_${account.slice(-4)}` : account),
+        status: 'ACTIVE',
+        // 关键点：多对多关联默认角色
+        roles: defaultRole ? { connect: { id: defaultRole.id } } : undefined,
       },
+      include: { roles: true } // 返回时包含角色信息，方便调试
     });
   }
 
   /**
-   * 登录逻辑 (双字段检索)
+   * 核心登录逻辑：双向匹配 + 密码验证
    */
-  async login(dto: LoginInput) {
+  async login(dto: LoginInput): Promise<Token> {
     const { account, password } = dto;
 
-    // 1. 任意命中 phone 或 userName 均可
+    // 1. 查找用户 (关联角色用于后续 Token 签发，如果载荷需要角色名的话)
     const user = await this.prisma.user.findFirst({
       where: {
-        OR: [
-          { phone: account },
-          { userName: account },
-        ],
+        OR: [{ phone: account }, { userName: account }],
       },
     });
 
-    if (!user) {
-      throw new UnauthorizedException('该账号或手机号未注册');
+    if (!user) throw new UnauthorizedException('账号不存在或手机号未注册');
+    if (user.status === 'INACTIVE') throw new UnauthorizedException('该账号已被禁用');
+
+    // 2. 校验密码 (针对静默注册但未设密码的用户特殊处理)
+    if (!user.password) {
+      throw new BadRequestException('该账号尚未设置密码，请使用微信快捷登录或找回密码');
     }
 
-    // 2. 校验密码
-    const isPasswordValid = await this.passwordService.validatePassword(
-      password,
-      user.password,
-    );
+    const isPasswordValid = await this.passwordService.validatePassword(password, user.password);
+    if (!isPasswordValid) throw new UnauthorizedException('密码输入有误');
 
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('密码错误');
-    }
-
+    // 3. 生成双 Token
     return this.generateToken({ userId: user.id });
   }
 
   /**
-   * 微信小程序一键登录/注册
+   * 微信小程序：手机号授权 一键登录/静默注册
    */
-  async wechatLogin(code: string) {
+  async wechatPhoneLogin(dto: WechatPhoneLoginInput) {
+    const { loginCode, phoneCode } = dto;
+    const appId = process.env.WX_MINI_APP_ID;
+    const appSecret = process.env.WX_MINI_APP_SECRET;
+
+    if (!appId || !appSecret) {
+      throw new BadRequestException('服务器微信配置缺失');
+    }
+
     try {
-      // 1. 换取 accessToken
-      const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
+      // ==========================================
+      // 1. 用 loginCode 换取用户的 openId
+      // ==========================================
+      const sessionUrl = `https://api.weixin.qq.com/sns/jscode2session?appid=${appId}&secret=${appSecret}&js_code=${loginCode}&grant_type=authorization_code`;
+      const sessionRes = await axios.get(sessionUrl);
+      if (sessionRes.data.errcode) {
+        throw new BadRequestException(`微信登录失败: ${sessionRes.data.errmsg}`);
+      }
+      const openId = sessionRes.data.openid;
+
+      // ==========================================
+      // 2. 获取小程序的全局接口调用凭据 access_token
+      // ⚠️ 生产环境强烈建议将 access_token 缓存在 Redis 中（有效期2小时），避免频繁调用超出限额
+      // ==========================================
+      const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
       const tokenRes = await axios.get(tokenUrl);
       const accessToken = tokenRes.data.access_token;
+      if (!accessToken) throw new BadRequestException('获取微信 accessToken 失败');
 
-      if (!accessToken) throw new BadRequestException('获取微信凭证失败');
-
-      // 2. 换取用户手机号
+      // ==========================================
+      // 3. 用 phoneCode 换取用户真实手机号
+      // ==========================================
       const phoneUrl = `https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=${accessToken}`;
-      const phoneRes = await axios.post(phoneUrl, { code });
-
+      const phoneRes = await axios.post(phoneUrl, { code: phoneCode });
+      
       if (phoneRes.data.errcode !== 0) {
-        throw new BadRequestException(`微信授权失败: ${phoneRes.data.errmsg}`);
+        throw new BadRequestException(`解析手机号失败: ${phoneRes.data.errmsg}`);
       }
+      const purePhoneNumber = phoneRes.data.phone_info.purePhoneNumber; // 例如：13812345678
 
-      const phoneNumber = phoneRes.data.phone_info.phoneNumber;
-
-      // 3. 查找或静默注册
+      // ==========================================
+      // 4. 数据库业务逻辑：查找 或 静默注册
+      // ==========================================
       let user = await this.prisma.user.findUnique({
-        where: { phone: phoneNumber },
+        where: { phone: purePhoneNumber },
       });
 
       if (!user) {
+        // 【静默注册分支】
+        // 获取默认学生角色
+        const defaultRole = await this.prisma.role.findUnique({ where: { code: 'STUDENT' } });
+        
+        // 生成一个强随机密码（小程序注册的用户默认不知道密码，后续可通过手机号验证码找回/重置）
+        const randomPassword = Math.random().toString(36).slice(-8); 
+        const hashedPassword = await this.passwordService.hashPassword(randomPassword);
+
         user = await this.prisma.user.create({
           data: {
-            phone: phoneNumber,
-            userName: `wx_${phoneNumber}`, // 小程序注册用户分配一个默认的 userName
-            password: '', // 小程序注册暂无密码，可通过 H5 找回密码功能设置
-            name: `微信用户_${phoneNumber.slice(-4)}`,
+            phone: purePhoneNumber,
+            userName: `wx_${purePhoneNumber}`, // 自动分配一个 userName
+            password: hashedPassword,
+            name: `微信用户_${purePhoneNumber.slice(-4)}`,
+            openId: openId, // 绑定 openId
+            roles: defaultRole ? { connect: { id: defaultRole.id } } : undefined,
           },
+        });
+      } else if (!user.openId) {
+        // 【已有账号分支】如果用户以前用账号密码注册过，但没绑定微信，这里顺手帮他绑定
+        user = await this.prisma.user.update({
+          where: { id: user.id },
+          data: { openId: openId },
         });
       }
 
+      // ==========================================
+      // 5. 登录成功，签发 JWT Token 给前端
+      // ==========================================
       return this.generateToken({ userId: user.id });
-    } catch (e: any) {
-      throw new BadRequestException(e.message || '微信登录异常');
+
+    } catch (error: any) {
+      // 统一捕获处理
+      throw new BadRequestException(error.response?.data?.errmsg || error.message || '微信授权过程发生异常');
     }
   }
 
@@ -178,6 +220,94 @@ export class AuthService {
     });
 
     return { message: '密码修改成功' };
+  }
+
+  async importUsers(dto: ImportUsersDto) {
+    const { classId, users } = dto;
+    const defaultPassword = await this.passwordService.hashPassword('abc12345');
+    
+    // 获取默认学生角色
+    const studentRole = await this.prisma.role.findUnique({ where: { code: 'STUDENT' } });
+
+    let successCount = 0;
+    const errors = [];
+
+    // ⚠️ 在生产环境中，建议使用 prisma.$transaction 或分批处理大量数据
+    for (const item of users) {
+      try {
+        // A. 查找或创建用户 (Upsert 逻辑)
+        let user = await this.prisma.user.findUnique({ where: { phone: item.phone } });
+        
+        if (!user) {
+          // 不存在：创建新用户
+          user = await this.prisma.user.create({
+            data: {
+              phone: item.phone,
+              userName: `stu_${item.phone}`,
+              name: item.name,
+              idCard: item.idCard,
+              password: defaultPassword, // 默认密码
+              roles: studentRole ? { connect: { id: studentRole.id } } : undefined,
+            }
+          });
+        } else {
+          // 已存在：可选更新其姓名和身份证
+          user = await this.prisma.user.update({
+            where: { id: user.id },
+            data: {
+              name: item.name || user.name,
+              idCard: item.idCard || user.idCard
+            }
+          });
+        }
+
+        // B. 绑定机构/班级关联 (如果已在班级中，更新状态为 ACTIVE)
+        await this.prisma.classMember.upsert({
+          where: {
+            classId_userId: { classId, userId: user.id }
+          },
+          update: { status: UserStatus.ACTIVE }, // 恢复激活状态
+          create: {
+            classId,
+            userId: user.id,
+            role: 'STUDENT',
+            status: UserStatus.ACTIVE,
+          }
+        });
+
+        successCount++;
+      } catch (err: any) {
+        errors.push(`手机号 ${item.phone} 处理失败: ${err.message}`);
+      }
+    }
+
+    return {
+      message: `导入完成，成功 ${successCount} 条，失败 ${errors.length} 条`,
+      errors
+    };
+  }
+
+  /**
+   * 重置密码
+   */
+  async resetPassword(id: string) {
+    const hashedPassword = await this.passwordService.hashPassword('abc12345');
+    await this.prisma.user.update({
+      where: { id },
+      data: { password: hashedPassword },
+    });
+    return { message: '密码已重置为 abc12345' };
+  }
+
+  /**
+   * 更改状态 (启停账号)
+   */
+  async updateStatus(id: string, status: string) {
+    // 禁止禁用超级管理员等保护逻辑可在此处添加
+    return this.prisma.user.update({
+      where: { id },
+      data: { status: status as any },
+    });
   }
 
   getUserFromToken(token: string): Promise<User> {

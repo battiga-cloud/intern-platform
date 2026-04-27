@@ -16,7 +16,7 @@ declare namespace API {
     name: string
     phone: string
     status: string
-    memberships: Array<{
+    classMemberships: Array<{
       id: string
       role: string
       status: string

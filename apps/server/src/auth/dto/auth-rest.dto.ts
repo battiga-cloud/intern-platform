@@ -34,6 +34,18 @@ export class LoginInput {
   password: string;
 }
 
+export class WechatPhoneLoginInput {
+  @ApiProperty({ description: '微信登录 code' })
+  @IsNotEmpty({ message: 'wx.login 的 code 不能为空' })
+  @IsString()
+  loginCode: string; // 用于换取 openId
+
+  @ApiProperty({ description: '获取手机号的 code' })
+  @IsNotEmpty({ message: '获取手机号的 code 不能为空' })
+  @IsString()
+  phoneCode: string; // 用于换取 真实手机号
+}
+
 export class UpdatePasswordDto {
   @ApiProperty({ description: '旧密码' })
   @IsNotEmpty({ message: '旧密码不能为空' })

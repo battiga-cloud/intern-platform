@@ -8,6 +8,8 @@ Table User {
   userName String [unique, not null]
   password String [not null]
   name String
+  idCard String [unique]
+  openId String [unique]
   avatar String
   sex Sex [not null, default: 'UNKNOWN']
   status UserStatus [not null, default: 'ACTIVE']
@@ -119,12 +121,13 @@ Table Class {
 
 Table ClassMember {
   id String [pk]
-  classId String [not null]
-  class Class [not null]
   userId String [not null]
   user User [not null]
+  classId String [not null]
   role String [not null, default: 'STUDENT']
+  status String [not null, default: 'ACTIVE']
   createdAt DateTime [default: `now()`, not null]
+  class Class [not null]
 
   indexes {
     (classId, userId) [unique]
@@ -313,9 +316,9 @@ Ref: JobPost.enterpriseId > Enterprise.id [delete: Cascade]
 
 Ref: Class.schoolId > School.id [delete: Cascade]
 
-Ref: ClassMember.classId > Class.id [delete: Cascade]
+Ref: ClassMember.userId > User.id
 
-Ref: ClassMember.userId > User.id [delete: Cascade]
+Ref: ClassMember.classId > Class.id
 
 Ref: Announcement.schoolId > School.id [delete: Cascade]
 

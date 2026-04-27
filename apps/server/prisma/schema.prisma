@@ -70,8 +70,10 @@ model User {
   password String // 哈希加密后的密码
 
   // --- 用户资料 (Profile) ---
-  name String? // 真实姓名（如 "张三", "John"）。强烈建议在业务层面（如学生认证时）设为必填。
+  name   String? // 真实姓名（如 "张三", "John"）。强烈建议在业务层面（如学生认证时）设为必填。
   // realName String?  // (备选) 如果 name 太宽泛，用 realName 语义最精确
+  idCard String? @unique // 身份证（可选）
+  openId String? @unique // 预留给微信小程序的 openId
 
   avatar String? // 头像
   sex    Sex     @default(UNKNOWN) // 性别
@@ -220,14 +222,16 @@ model Class {
 // 班级成员 (包含学生和教师)
 model ClassMember {
   id      String @id @default(cuid())
-  classId String
-  class   Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
   userId  String
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id])
+  classId String
+  // class     Class  @relation(fields: [classId], references: [id])
 
-  role String @default("STUDENT") // STUDENT 或 TEACHER 
+  role   String @default("STUDENT") // STUDENT 或 TEACHER 
+  status String @default("ACTIVE") // 状态：PENDING(待审批), ACTIVE(已加入), REJECTED(已拒绝)
 
   createdAt DateTime @default(now())
+  class     Class    @relation(fields: [classId], references: [id])
 
   @@unique([classId, userId]) // 一个人在一个班里只能有一条记录
 }

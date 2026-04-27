@@ -16,7 +16,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Validation
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true, // 🔴 开启自动类型转换（将字符串自动转为 DTO 中定义的 Number/Boolean 等）
+    whitelist: true, // （可选推荐）开启白名单，自动剔除前端传过来的、但 DTO 中没有定义的冗余字段
+  }));
 
   // enable shutdown hook
   app.enableShutdownHooks();

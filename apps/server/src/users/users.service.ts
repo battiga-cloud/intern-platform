@@ -1,10 +1,11 @@
 import { Injectable, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
-import { User } from '@prisma/client';
+import { User, UserStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
+import { ImportUsersDto } from './dto/user-rest.dto';
 
 @Injectable()
 export class UsersService {
@@ -179,6 +180,95 @@ export class UsersService {
           set: roleIds.map(roleId => ({ id: roleId })),
         },
       },
+    });
+  }
+
+
+  async importUsers(dto: ImportUsersDto) {
+    const { classId, users } = dto;
+    const defaultPassword = await bcrypt.hash('abc12345', 10);
+    
+    // 获取默认学生角色
+    const studentRole = await this.prisma.role.findUnique({ where: { code: 'STUDENT' } });
+
+    let successCount = 0;
+    const errors = [];
+
+    // ⚠️ 在生产环境中，建议使用 prisma.$transaction 或分批处理大量数据
+    for (const item of users) {
+      try {
+        // A. 查找或创建用户 (Upsert 逻辑)
+        let user = await this.prisma.user.findUnique({ where: { phone: item.phone } });
+        
+        if (!user) {
+          // 不存在：创建新用户
+          user = await this.prisma.user.create({
+            data: {
+              phone: item.phone,
+              userName: `stu_${item.phone}`,
+              name: item.name,
+              idCard: item.idCard,
+              password: defaultPassword, // 默认密码
+              roles: studentRole ? { connect: { id: studentRole.id } } : undefined,
+            }
+          });
+        } else {
+          // 已存在：可选更新其姓名和身份证
+          user = await this.prisma.user.update({
+            where: { id: user.id },
+            data: {
+              name: item.name || user.name,
+              idCard: item.idCard || user.idCard
+            }
+          });
+        }
+
+        // B. 绑定机构/班级关联 (如果已在班级中，更新状态为 ACTIVE)
+        await this.prisma.classMember.upsert({
+          where: {
+            classId_userId: { classId, userId: user.id }
+          },
+          update: { status: UserStatus.ACTIVE }, // 恢复激活状态
+          create: {
+            classId,
+            userId: user.id,
+            role: 'STUDENT',
+            status: UserStatus.ACTIVE,
+          }
+        });
+
+        successCount++;
+      } catch (err: any) {
+        errors.push(`手机号 ${item.phone} 处理失败: ${err.message}`);
+      }
+    }
+
+    return {
+      message: `导入完成，成功 ${successCount} 条，失败 ${errors.length} 条`,
+      errors
+    };
+  }
+
+  /**
+   * 重置密码
+   */
+  async resetPassword(id: string) {
+    const hashedPassword = await bcrypt.hash('abc12345', 10);
+    await this.prisma.user.update({
+      where: { id },
+      data: { password: hashedPassword },
+    });
+    return { message: '密码已重置为 abc12345' };
+  }
+
+  /**
+   * 更改状态 (启停账号)
+   */
+  async updateStatus(id: string, status: string) {
+    // 禁止禁用超级管理员等保护逻辑可在此处添加
+    return this.prisma.user.update({
+      where: { id },
+      data: { status: status as any },
     });
   }
 }

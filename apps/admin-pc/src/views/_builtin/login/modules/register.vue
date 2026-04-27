@@ -50,14 +50,14 @@ async function handleSubmit() {
     <NFormItem path="phone">
       <NInput v-model:value="model.phone" :placeholder="$t('page.login.common.phonePlaceholder')" />
     </NFormItem>
-    <NFormItem path="code">
+    <!-- <NFormItem path="code">
       <div class="w-full flex-y-center gap-16px">
         <NInput v-model:value="model.code" :placeholder="$t('page.login.common.codePlaceholder')" />
         <NButton size="large" :disabled="isCounting" :loading="loading" @click="getCaptcha(model.phone)">
           {{ label }}
         </NButton>
       </div>
-    </NFormItem>
+    </NFormItem> -->
     <NFormItem path="password">
       <NInput
         v-model:value="model.password"

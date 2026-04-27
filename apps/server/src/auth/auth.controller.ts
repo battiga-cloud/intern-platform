@@ -11,10 +11,9 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { SignupInput, LoginInput, UpdatePasswordDto, RefreshTokenInput } from './dto/auth-rest.dto';
+import { SignupInput, LoginInput, UpdatePasswordDto, RefreshTokenInput, WechatPhoneLoginInput } from './dto/auth-rest.dto';
 import { User } from '../common/decorators/user.decorator'; // 假设你已定义此装饰器
 import { ResponseCode, ResponseMessage } from '../common/decorators/response.decorator';
-import { WechatLoginInput } from './dto/wechat-login.input';
 
 @Controller('auth')
 export class AuthController {
@@ -42,10 +41,10 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
-  @Post('wechat-login')
+  @Post('wechat-phone-login')
   @ResponseMessage('登录成功')
-  async wechatLogin(@Body() wechatLoginInput: WechatLoginInput) {
-    return this.authService.wechatLogin(wechatLoginInput.code);
+  async wechatPhoneLogin(@Body() dto: WechatPhoneLoginInput) {
+    return this.authService.wechatPhoneLogin(dto);
   }
 
   /**

@@ -9,6 +9,7 @@ import { AssignRolesDto } from './dto/assign-roles.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { User } from '../common/decorators/user.decorator';
 import { ResponseMessage } from '../common/decorators/response.decorator';
+import { ImportUsersDto, UpdateStatusDto } from './dto/user-rest.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('system/users')
@@ -55,5 +56,23 @@ export class UsersController {
     @User() currentUser: any
   ) {
     return this.usersService.assignRoles(id, dto.roleIds, currentUser);
+  }
+
+  @Post('import')
+  @ResponseMessage('批量导入处理完成')
+  async importUsers(@Body() dto: ImportUsersDto) {
+    return this.usersService.importUsers(dto);
+  }
+
+  @Patch(':id/reset-password')
+  @ResponseMessage('密码重置成功')
+  async resetPassword(@Param('id') id: string) {
+    return this.usersService.resetPassword(id);
+  }
+
+  @Patch(':id/status')
+  @ResponseMessage('状态更新成功')
+  async updateStatus(@Param('id') id: string, @Body() dto: UpdateStatusDto) {
+    return this.usersService.updateStatus(id, dto.status);
   }
 }

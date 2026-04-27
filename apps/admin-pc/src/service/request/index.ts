@@ -100,8 +100,11 @@ export const request = createFlatRequest(
     },
     onError(error) {
       // when the request is fail, you can show error message
+      // console.log('error', error?.response?.data,error.response, error, request.state)
 
-      let message = error.message;
+      const { msg, message: backendMessage } = (error?.response?.data || {}) as any;
+
+      let message = msg || backendMessage || error.message;
       let backendErrorCode = '';
 
       // get backend error message and code
