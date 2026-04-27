@@ -1,11 +1,11 @@
-import { Injectable, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { Prisma, User, UserStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
-import { ImportUsersDto } from './dto/user-rest.dto';
+import { CreateSingleUserDto, ImportUsersDto } from './dto/user-rest.dto';
 import { RoleCode } from '../common/enums/role.enum';
 
 // 🔴  定义一个包含了 roles 关系的新类型
@@ -37,7 +37,30 @@ export class UsersService {
   }
 
   /**
-   * 创建用户 (包含越权防御)
+   * 🛡️ 公共权限校验器：拦截越权拉人
+   */
+  private async validateClassPermission(classId: string, currentUser: any) {
+    const targetClass = await this.prisma.class.findUnique({ where: { id: classId } });
+    if (!targetClass) throw new BadRequestException('指定的班级/部门不存在');
+
+    // 判断是否为超管或平台管理员
+    const isPlatformAdmin = currentUser.roles?.some(r =>
+      [RoleCode.SUPER_ADMIN, RoleCode.PLATFORM_ADMIN].includes(r.code)
+    );
+
+    // 如果不是平台管理员，则严格校验其管理范围
+    if (!isPlatformAdmin) {
+      // 假设企业和学校共用 manageSchoolId 字段，或这里加上 enterpriseId 的判断
+      if (targetClass.schoolId !== currentUser.manageSchoolId) {
+        throw new ForbiddenException('越权操作：您只能将用户添加到您所管理的机构中');
+      }
+    }
+    return targetClass;
+  }
+
+  /**
+   * B 端创建用户 (包含越权防御)
+   * 超管给学校建“校长账号”；或者企业建“HR账号”。
    */
   async create(dto: CreateUserDto, currentUser: UserWithRoles) {
     // 1. 越权防御：学校管理员只能创建本校的用户
@@ -72,6 +95,54 @@ export class UsersService {
       select: { id: true, userName: true, name: true } // 不返回敏感的密码信息
     });
   }
+
+  /**
+     * 单个新增用户 (兼容 C 端注册)
+     */
+  async createSingleUser(dto: CreateSingleUserDto, currentUser: any) {
+    // 1. 严格权限校验
+    await this.validateClassPermission(dto.classId, currentUser);
+
+    // 2. 核心融合逻辑：根据手机号查找
+    let user = await this.prisma.user.findUnique({ where: { phone: dto.phone } });
+
+    if (!user) {
+      // 场景 A：纯新用户，没注册过小程序
+      const defaultPassword = await bcrypt.hash('abc12345', 10);
+      const studentRole = await this.prisma.role.findUnique({ where: { code: RoleCode.USER } });
+
+      user = await this.prisma.user.create({
+        data: {
+          phone: dto.phone,
+          userName: `u_${dto.phone}`,
+          name: dto.name,
+          idCard: dto.idCard,
+          password: defaultPassword,
+          roles: studentRole ? { connect: { id: studentRole.id } } : undefined,
+        }
+      });
+    } else {
+      // 场景 B：C端已注册，或者已经是其他机构的人。
+      // 可选：更新他的真实姓名或身份证
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          name: dto.name || user.name,
+          idCard: dto.idCard || user.idCard
+        }
+      });
+    }
+
+    // 3. 建立机构关系 (无论新老用户，都将关系 Upsert 到 ClassMember)
+    await this.prisma.classMember.upsert({
+      where: { classId_userId: { classId: dto.classId, userId: user.id } },
+      update: { status: 'ACTIVE' }, // 如果以前退出了，现在重新激活
+      create: { classId: dto.classId, userId: user.id, status: 'ACTIVE', role: 'STUDENT' }
+    });
+
+    return user;
+  }
+
 
   /**
    * 分页获取用户列表 (带有条件搜索与数据隔离)
@@ -198,67 +269,30 @@ export class UsersService {
   }
 
 
-  async importUsers(dto: ImportUsersDto) {
-    const { classId, users } = dto;
-    const defaultPassword = await bcrypt.hash('abc12345', 10);
-
-    // 获取默认学生角色
-    const studentRole = await this.prisma.role.findUnique({ where: { code: 'STUDENT' } });
+  async importUsers(dto: ImportUsersDto, currentUser: UserWithRoles) {
+    // 1. 批量导入也必须先经过统一的权限墙
+    await this.validateClassPermission(dto.classId, currentUser);
 
     let successCount = 0;
     const errors = [];
 
-    // ⚠️ 在生产环境中，建议使用 prisma.$transaction 或分批处理大量数据
-    for (const item of users) {
+    // 2. 遍历执行融合逻辑
+    for (const item of dto.users) {
       try {
-        // A. 查找或创建用户 (Upsert 逻辑)
-        let user = await this.prisma.user.findUnique({ where: { phone: item.phone } });
-
-        if (!user) {
-          // 不存在：创建新用户
-          user = await this.prisma.user.create({
-            data: {
-              phone: item.phone,
-              userName: `stu_${item.phone}`,
-              name: item.name,
-              idCard: item.idCard,
-              password: defaultPassword, // 默认密码
-              roles: studentRole ? { connect: { id: studentRole.id } } : undefined,
-            }
-          });
-        } else {
-          // 已存在：可选更新其姓名和身份证
-          user = await this.prisma.user.update({
-            where: { id: user.id },
-            data: {
-              name: item.name || user.name,
-              idCard: item.idCard || user.idCard
-            }
-          });
-        }
-
-        // B. 绑定机构/班级关联 (如果已在班级中，更新状态为 ACTIVE)
-        await this.prisma.classMember.upsert({
-          where: {
-            classId_userId: { classId, userId: user.id }
-          },
-          update: { status: UserStatus.ACTIVE }, // 恢复激活状态
-          create: {
-            classId,
-            userId: user.id,
-            role: 'STUDENT',
-            status: UserStatus.ACTIVE,
-          }
-        });
-
+        await this.createSingleUser({
+          phone: item.phone,
+          name: item.name,
+          idCard: item.idCard,
+          classId: dto.classId
+        }, currentUser);
         successCount++;
       } catch (err: any) {
-        errors.push(`手机号 ${item.phone} 处理失败: ${err.message}`);
+        errors.push(`手机号 ${item.phone} 导入失败: ${err.message}`);
       }
     }
 
     return {
-      message: `导入完成，成功 ${successCount} 条，失败 ${errors.length} 条`,
+      message: `导入处理完成。成功：${successCount}，失败：${errors.length}`,
       errors
     };
   }

@@ -1,29 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { UserStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsArray, IsEnum, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-
-export class JoinClassDto {
-  @ApiProperty({ description: '班级ID' })
-  @IsString({ message: '班级ID格式错误' })
-  @IsNotEmpty({ message: '班级ID不能为空' })
-  classId: string;
-}
-
-// 如果你未来需要修改用户资料（比如修改昵称、头像），也可以写在这里
-export class UpdateProfileDto {
-  @ApiProperty({ description: '姓名' })
-  @IsString()
-  @IsNotEmpty()
-  name?: string;
-  
-  // avatar?: string;
-}
-
+import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class ImportUserItemDto {
   @ApiProperty({ description: '手机号' })
-   @IsNotEmpty({ message: '手机号不能为空' })
+  @IsNotEmpty({ message: '手机号不能为空' })
   @IsString()
   phone: string;
 
@@ -38,6 +20,7 @@ export class ImportUserItemDto {
 }
 
 export class ImportUsersDto {
+  @ApiProperty({ description: '目标班级/机构 ID' })
   @IsNotEmpty({ message: '目标班级/机构 ID 不能为空' })
   @IsString()
   classId: string;
@@ -55,4 +38,50 @@ export class UpdateStatusDto {
   @ApiProperty({ enum: UserStatus, enumName: 'UserStatus', description: '账号状态' })
   @IsEnum(UserStatus)
   status: UserStatus;
+}
+
+export class CreateSingleUserDto {
+  @ApiProperty({ description: '手机号' })
+  @IsNotEmpty({ message: '手机号不能为空' })
+  @IsString()
+  phone: string;
+
+  @ApiProperty({ description: '姓名' })
+  @IsNotEmpty({ message: '姓名不能为空' })
+  @IsString()
+  name: string;
+
+  @ApiProperty({ description: '身份证号' })
+  @IsOptional()
+  @IsString()
+  idCard?: string;
+
+  @ApiProperty({ description: '班级ID' })
+  @IsNotEmpty({ message: '必须指定归属班级/部门' })
+  @IsString()
+  classId: string; // 无论谁建账号，散客靠自己注册，后台建的必须进班级/机构
+}
+
+export class UpdateUserDto {
+  @ApiProperty({ description: '姓名' })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiProperty({ description: '身份证号' })
+  @IsOptional()
+  @IsString()
+  idCard?: string;
+
+  @ApiProperty({ description: '班级ID' })
+  @IsOptional()
+  @IsString()
+  classId?: string; // 支持修改用户所属班级
+}
+
+export class JoinClassDto {
+  @ApiProperty({ description: '班级ID' })
+  @IsString({ message: '班级ID格式错误' })
+  @IsNotEmpty({ message: '班级ID不能为空' })
+  classId: string;
 }
