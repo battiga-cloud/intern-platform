@@ -1,44 +1,52 @@
 import { Injectable, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
-import { User, UserStatus } from '@prisma/client';
+import { Prisma, User, UserStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
 import { ImportUsersDto } from './dto/user-rest.dto';
+import { RoleCode } from '../common/enums/role.enum';
+
+// 🔴  定义一个包含了 roles 关系的新类型
+type UserWithRoles = Prisma.UserGetPayload<{
+  include: { roles: true }
+}>;
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   /**
    * 🛡️ 核心辅助方法：生成数据隔离条件
    * @param currentUser 当前发请求的登录用户
    */
-  private buildIsolationWhere(currentUser: User) {
-    const where: any = {};
-    // 如果当前用户是学校管理员，强制加上 schoolId 过滤
-    if (currentUser.schoolId) {
-      where.schoolId = currentUser.schoolId;
+  private buildIsolationWhere(currentUser: UserWithRoles) {
+    // 现在的 TS 会完美识别 currentUser.roles，不仅不报错，敲代码时还会有自动补全！
+    if (currentUser.roles?.some(r => r.code === RoleCode.SCHOOL_ADMIN)) {
+      return {
+        classMemberships: {
+          some: {
+            class: { schoolId: currentUser.manageSchoolId },
+            status: 'ACTIVE'
+          }
+        }
+      };
     }
-    // 如果当前用户是企业管理员，强制加上 enterpriseId 过滤
-    if (currentUser.enterpriseId) {
-      where.enterpriseId = currentUser.enterpriseId;
-    }
-    return where;
+    return {};
   }
 
   /**
    * 创建用户 (包含越权防御)
    */
-  async create(dto: CreateUserDto, currentUser: User) {
+  async create(dto: CreateUserDto, currentUser: UserWithRoles) {
     // 1. 越权防御：学校管理员只能创建本校的用户
-    if (currentUser.schoolId) {
-      dto.schoolId = currentUser.schoolId; 
+    if (currentUser.manageSchoolId) {
+      dto.manageSchoolId = currentUser.manageSchoolId;
       dto.enterpriseId = null; // 绝对不允许跨界关联企业
     } else if (currentUser.enterpriseId) {
       dto.enterpriseId = currentUser.enterpriseId;
-      dto.schoolId = null;
+      dto.manageSchoolId = null;
     }
 
     // 2. 账号防重校验
@@ -68,15 +76,21 @@ export class UsersService {
   /**
    * 分页获取用户列表 (带有条件搜索与数据隔离)
    */
-  async findAll(query: UserQueryDto, currentUser: User) {
-    const { page = 1, pageSize = 10, userName, name } = query;
+  async findAll(query: UserQueryDto, currentUser: UserWithRoles) {
+    const { page = 1, pageSize = 10, keyword } = query;
     const skip = (page - 1) * pageSize;
 
-    // 组合基础查询条件 + 数据隔离条件
+    const baseWhere = this.buildIsolationWhere(currentUser);
+
+    // 合并搜索条件
     const whereCondition: any = {
-      ...this.buildIsolationWhere(currentUser),
-      ...(userName && { userName: { contains: userName, mode: 'insensitive' } }),
-      ...(name && { name: { contains: name, mode: 'insensitive' } }),
+      ...baseWhere,
+      ...(keyword && {
+        OR: [
+          { name: { contains: keyword, mode: 'insensitive' } },
+          { phone: { contains: keyword } },
+        ]
+      })
     };
 
     const [total, records] = await this.prisma.$transaction([
@@ -88,7 +102,7 @@ export class UsersService {
         orderBy: { createdAt: 'desc' },
         include: {
           roles: { select: { id: true, name: true } },
-          school: { select: { name: true } },
+          manageSchool: { select: { name: true } },
           enterprise: { select: { name: true } },
         },
       }),
@@ -108,7 +122,7 @@ export class UsersService {
   /**
    * 获取详情
    */
-  async findOne(id: string, currentUser: User) {
+  async findOne(id: string, currentUser: UserWithRoles) {
     const user = await this.prisma.user.findFirst({
       where: {
         id,
@@ -131,9 +145,9 @@ export class UsersService {
   /**
    * 更新用户
    */
-  async update(id: string, dto: UpdateUserDto, currentUser: User) {
+  async update(id: string, dto: UpdateUserDto, currentUser: UserWithRoles) {
     // 确保该用户属于当前机构
-    await this.findOne(id, currentUser); 
+    await this.findOne(id, currentUser);
 
     // 如果前端试图修改密码，做哈希处理
     if (dto.password) {
@@ -141,7 +155,7 @@ export class UsersService {
     }
 
     // 越权防御：无视前端传来的机构 ID，强制锁死为本机构 (如果不是超管)
-    if (currentUser.schoolId) dto.schoolId = currentUser.schoolId;
+    if (currentUser.manageSchoolId) dto.manageSchoolId = currentUser.manageSchoolId;
     if (currentUser.enterpriseId) dto.enterpriseId = currentUser.enterpriseId;
 
     const updatedUser = await this.prisma.user.update({
@@ -156,9 +170,9 @@ export class UsersService {
   /**
    * 删除用户
    */
-  async remove(id: string, currentUser: User) {
+  async remove(id: string, currentUser: UserWithRoles) {
     await this.findOne(id, currentUser); // 鉴权
-    
+
     // 自我保护
     if (id === currentUser.id) {
       throw new BadRequestException('不能删除当前登录的账号');
@@ -170,7 +184,7 @@ export class UsersService {
   /**
    * 分配角色
    */
-  async assignRoles(id: string, roleIds: string[], currentUser: User) {
+  async assignRoles(id: string, roleIds: string[], currentUser: UserWithRoles) {
     await this.findOne(id, currentUser); // 鉴权
 
     return this.prisma.user.update({
@@ -187,7 +201,7 @@ export class UsersService {
   async importUsers(dto: ImportUsersDto) {
     const { classId, users } = dto;
     const defaultPassword = await bcrypt.hash('abc12345', 10);
-    
+
     // 获取默认学生角色
     const studentRole = await this.prisma.role.findUnique({ where: { code: 'STUDENT' } });
 
@@ -199,7 +213,7 @@ export class UsersService {
       try {
         // A. 查找或创建用户 (Upsert 逻辑)
         let user = await this.prisma.user.findUnique({ where: { phone: item.phone } });
-        
+
         if (!user) {
           // 不存在：创建新用户
           user = await this.prisma.user.create({

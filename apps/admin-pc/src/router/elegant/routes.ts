@@ -81,43 +81,29 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base',
     meta: {
       title: 'system',
-      i18nKey: 'route.system'
+      i18nKey: 'route.system',
+      icon: 'hugeicons:system-update-01',
+      order: 2
     },
     children: [
-      {
-        name: 'system_class',
-        path: '/system/class',
-        component: 'view.system_class',
-        meta: {
-          title: 'system_class',
-          i18nKey: 'route.system_class'
-        }
-      },
-      {
-        name: 'system_menu',
-        path: '/system/menu',
-        component: 'view.system_menu',
-        meta: {
-          title: '菜单管理',
-          i18nKey: 'route.system_menu'
-        }
-      },
-      {
-        name: 'system_role',
-        path: '/system/role',
-        component: 'view.system_role',
-        meta: {
-          title: '角色管理',
-          i18nKey: 'route.system_role'
-        }
-      },
       {
         name: 'system_school',
         path: '/system/school',
         component: 'view.system_school',
         meta: {
           title: 'system_school',
-          i18nKey: 'route.system_school'
+          i18nKey: 'route.system_school',
+          icon: 'ion:school-sharp'
+        }
+      },
+      {
+        name: 'system_class',
+        path: '/system/class',
+        component: 'view.system_class',
+        meta: {
+          title: 'system_class',
+          i18nKey: 'route.system_class',
+          icon: 'mdi:google-classroom'
         }
       },
       {
@@ -126,7 +112,28 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.system_user',
         meta: {
           title: '用户管理',
-          i18nKey: 'route.system_user'
+          i18nKey: 'route.system_user',
+          icon: 'hugeicons:user-ai'
+        }
+      },
+      {
+        name: 'system_menu',
+        path: '/system/menu',
+        component: 'view.system_menu',
+        meta: {
+          title: '菜单管理',
+          i18nKey: 'route.system_menu',
+          icon: 'line-md:menu-unfold-right'
+        }
+      },
+      {
+        name: 'system_role',
+        path: '/system/role',
+        component: 'view.system_role',
+        meta: {
+          title: '角色管理',
+          i18nKey: 'route.system_role',
+          icon: 'mdi:user-group'
         }
       }
     ]

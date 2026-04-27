@@ -30,7 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // 拿着 Payload 里的 userId 去数据库查询完整信息
     const user = await this.prisma.user.findUnique({
       where: { id: payload.userId },
-      // 🔴 建议：在此处包含角色信息，这样在接口中使用 @User() 获取到的对象就带权限了
+      // 🔴 不仅要把 roles 查出来，还要把管理属性查出来
       include: {
         roles: true,
       },

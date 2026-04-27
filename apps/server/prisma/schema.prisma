@@ -81,16 +81,20 @@ model User {
   status UserStatus @default(ACTIVE)
 
   // 数据隔离：用户所属的机构 (可为空表示自由用户/平台管理员)
-  schoolId     String?
-  school       School?     @relation(fields: [schoolId], references: [id])
-  enterpriseId String?
-  enterprise   Enterprise? @relation(fields: [enterpriseId], references: [id])
+  // 🔴 B 端专属：如果是学校管理员，他管理哪个学校？
+  // (只有 SCHOOL_ADMIN 角色该字段才有值，普通人是 null)
+  manageSchoolId String?
+  manageSchool   School?     @relation("SchoolAdmins", fields: [manageSchoolId], references: [id])
+  enterpriseId   String?
+  enterprise     Enterprise? @relation(fields: [enterpriseId], references: [id])
 
-  // 关系映射
-  roles             Role[]             @relation("UserRoles")
-  logs              Log[]
-  sentMessages      Message[]          @relation("SentMessages")
-  receivedMessages  Message[]          @relation("ReceivedMessages")
+  // 🔴 系统级：多对多关联 Role 表（控制菜单权限）
+  roles            Role[]    @relation("UserRoles")
+  logs             Log[]
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+
+  // 🔴 C 端专属：作为普通用户，他加入了哪些班级
   classMemberships  ClassMember[]
   attendances       Attendance[]
   reports           Report[]
@@ -105,6 +109,63 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model School {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  logo        String? // 学校LOGO
+  description String? // 简介
+  address     String? // 地址
+  contactName String? // 负责人姓名
+  phone       String? // 负责人电话
+  status      String  @default("ACTIVE") // ACTIVE, INACTIVE
+
+  admins        User[]         @relation("SchoolAdmins") // 关联管理该学校的 User
+  classes       Class[]
+  announcements Announcement[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  evaluations Evaluation[] // 本校学生在各企业收到的评价汇总
+}
+
+// 班级管理
+model Class {
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  name        String // 例如 "机电3班"
+  year        Int? // 届别，如 2026
+  status      String  @default("ACTIVE")
+  description String?
+  grade       String? // 👈 确保这行存在 (年级)
+
+  // 班级里的成员 (C端)
+  memberships ClassMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, schoolId]) // 同一学校内班级名不能重复
+}
+
+// 班级成员 (包含学生和教师)
+model ClassMember {
+  id      String @id @default(cuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  classId String
+  class   Class  @relation(fields: [classId], references: [id])
+
+  // 🔴 这里的 role 不是全局 Role 表，而是一个简单的字符串枚举
+  role   String @default("STUDENT") // STUDENT 或 TEACHER 
+  status String @default("ACTIVE") // 状态：PENDING(待审批), ACTIVE(已加入), REJECTED(已拒绝)
+
+  createdAt DateTime @default(now())
+
+  @@unique([classId, userId]) // 一个人在一个班里只能有一条记录
 }
 
 model Role {
@@ -168,45 +229,6 @@ model Enterprise {
   evaluations Evaluation[] // 企业名下的所有评价记录
 }
 
-model School {
-  id          String  @id @default(cuid())
-  name        String  @unique
-  logo        String? // 学校LOGO
-  description String? // 简介
-  address     String? // 地址
-  contactName String? // 负责人姓名
-  phone       String? // 负责人电话
-  status      String  @default("ACTIVE") // ACTIVE, INACTIVE
-
-  users         User[]
-  classes       Class[]
-  announcements Announcement[]
-
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  evaluations Evaluation[] // 本校学生在各企业收到的评价汇总
-}
-
-// 班级管理
-model Class {
-  id       String @id @default(cuid())
-  schoolId String
-  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-
-  name        String // 例如 "机电3班"
-  year        Int? // 届别，如 2026
-  status      String  @default("ACTIVE")
-  description String?
-  grade       String? // 👈 确保这行存在 (年级)
-
-  classMemberships ClassMember[] // 👈 确保这里是 classMemberships
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([name, schoolId]) // 同一学校内班级名不能重复
-}
-
 // ==========================================
 // 4. 业务域：招聘与教学管理 (Business Core)
 // ==========================================
@@ -225,23 +247,6 @@ model JobPost {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-// 班级成员 (包含学生和教师)
-model ClassMember {
-  id      String @id @default(cuid())
-  userId  String
-  user    User   @relation(fields: [userId], references: [id])
-  classId String
-  // class     Class  @relation(fields: [classId], references: [id])
-
-  role   String @default("STUDENT") // STUDENT 或 TEACHER 
-  status String @default("ACTIVE") // 状态：PENDING(待审批), ACTIVE(已加入), REJECTED(已拒绝)
-
-  createdAt DateTime @default(now())
-  class     Class    @relation(fields: [classId], references: [id])
-
-  @@unique([classId, userId]) // 一个人在一个班里只能有一条记录
 }
 
 // 学校公告

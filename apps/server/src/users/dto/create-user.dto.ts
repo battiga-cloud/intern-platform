@@ -36,7 +36,7 @@ export class CreateUserDto {
   @ApiProperty({ description: '学校ID' })
   @IsOptional()
   @IsString()
-  schoolId?: string;
+  manageSchoolId?: string;
 
   @ApiProperty({ description: '企业ID' })
   @IsOptional()

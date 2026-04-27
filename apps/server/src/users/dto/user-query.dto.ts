@@ -3,15 +3,11 @@ import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UserQueryDto {
-  @ApiProperty({ description: '登录账号' })
+  @ApiProperty({ description: '查询关键词 (用户名/手机号/姓名)' })
   @IsOptional()
   @IsString()
-  userName?: string;
+  keyword?: string;
 
-  @ApiProperty({ description: '姓名' })
-  @IsOptional()
-  @IsString()
-  name?: string;
 
   @ApiProperty({ description: '页码' })
   @IsOptional()

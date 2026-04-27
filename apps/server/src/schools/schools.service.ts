@@ -58,7 +58,7 @@ export class SchoolsService {
     const classesCount = await this.prisma.class.count({ where: { schoolId: id } });
     if (classesCount > 0) throw new BadRequestException('该学校下存在关联的班级，无法直接删除');
 
-    const usersCount = await this.prisma.user.count({ where: { schoolId: id } });
+    const usersCount = await this.prisma.user.count({ where: { manageSchoolId: id } });
     if (usersCount > 0) throw new BadRequestException('该学校下存在关联的账号，无法直接删除');
 
     return this.prisma.school.delete({ where: { id } });
