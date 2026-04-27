@@ -76,12 +76,41 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
-    name: 'systems',
-    path: '/systems',
-    component: 'layout.base$view.systems',
+    name: 'system',
+    path: '/system',
+    component: 'layout.base',
     meta: {
-      title: 'systems',
-      i18nKey: 'route.systems'
-    }
+      title: 'system',
+      i18nKey: 'route.system'
+    },
+    children: [
+      {
+        name: 'system_menu',
+        path: '/system/menu',
+        component: 'view.system_menu',
+        meta: {
+          title: '菜单管理',
+          i18nKey: 'route.system_menu'
+        }
+      },
+      {
+        name: 'system_role',
+        path: '/system/role',
+        component: 'view.system_role',
+        meta: {
+          title: '角色管理',
+          i18nKey: 'route.system_role'
+        }
+      },
+      {
+        name: 'system_user',
+        path: '/system/user',
+        component: 'view.system_user',
+        meta: {
+          title: '用户管理',
+          i18nKey: 'route.system_user'
+        }
+      }
+    ]
   }
 ];

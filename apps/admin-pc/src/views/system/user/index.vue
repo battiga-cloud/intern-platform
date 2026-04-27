@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div>systems</div>
+  <div>system_user</div>
 </template>
 
 <style scoped></style>

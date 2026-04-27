@@ -226,7 +226,10 @@ const local: App.I18n.Schema = {
     500: '服务器错误',
     'iframe-page': '外链页面',
     home: '首页',
-    systems: '系统管理',
+    system: '系统管理',
+    system_menu: '菜单管理',
+    system_role: '角色管理',
+    system_user: '用户管理'
   },
   page: {
     login: {
