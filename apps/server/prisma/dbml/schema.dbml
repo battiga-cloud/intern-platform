@@ -11,7 +11,7 @@ Table User {
   idCard String [unique]
   openId String [unique]
   avatar String
-  sex Sex [not null, default: 'UNKNOWN']
+  sex Sex
   status UserStatus [not null, default: 'ACTIVE']
   manageSchoolId String
   manageSchool School

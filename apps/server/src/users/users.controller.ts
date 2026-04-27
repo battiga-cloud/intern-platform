@@ -9,7 +9,7 @@ import { AssignRolesDto } from './dto/assign-roles.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { User } from '../common/decorators/user.decorator';
 import { ResponseMessage } from '../common/decorators/response.decorator';
-import { ImportUsersDto, UpdateStatusDto } from './dto/user-rest.dto';
+import { CreateSingleUserDto, ImportUsersDto, UpdateStatusDto } from './dto/user-rest.dto';
 import { Prisma } from '@prisma/client';
 
 // 🔴  定义一个包含了 roles 关系的新类型
@@ -62,6 +62,15 @@ export class UsersController {
     @User() currentUser: UserWithRoles
   ) {
     return this.usersService.assignRoles(id, dto.roleIds, currentUser);
+  }
+
+  /**
+   * 专门给前端“新增学员”弹窗用的接口
+   */
+  @Post('single')
+  @ResponseMessage('学员新增/绑定成功')
+  createSingle(@Body() dto: CreateSingleUserDto, @User() currentUser: UserWithRoles) {
+    return this.usersService.createSingleUser(dto, currentUser);
   }
 
   @Post('import')

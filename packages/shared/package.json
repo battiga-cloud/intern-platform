@@ -1,5 +1,5 @@
 {
-  "name": "@muxi/bar",
+  "name": "@muxi/shared",
   "version": "1.0.0",
   "main": "dist/index",
   "types": "dist/index",
@@ -11,9 +11,6 @@
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.build.json",
     "prepublishOnly": "pnpm run build"
-  },
-  "dependencies": {
-    "@muxi/foo": "workspace:*"
   },
   "devDependencies": {
     "rimraf": "~6.1.0",

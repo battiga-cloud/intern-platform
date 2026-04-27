@@ -269,14 +269,17 @@ export class UsersService {
   }
 
 
+  /**
+   * 批量导入用户 (底层复用 createSingleUser 的逻辑)
+   */
   async importUsers(dto: ImportUsersDto, currentUser: UserWithRoles) {
-    // 1. 批量导入也必须先经过统一的权限墙
+    // 批量导入的入口同样要锁死权限
     await this.validateClassPermission(dto.classId, currentUser);
 
     let successCount = 0;
     const errors = [];
 
-    // 2. 遍历执行融合逻辑
+    // 循环执行 Upsert 逻辑
     for (const item of dto.users) {
       try {
         await this.createSingleUser({

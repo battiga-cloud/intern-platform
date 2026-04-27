@@ -4,8 +4,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@nighttrax/components/*": ["packages/components/src/*"],
-      "@nighttrax/*": ["packages/*/src"]
+      "@muxi/components/*": ["packages/components/src/*"],
+      "@muxi/*": ["packages/*/src"]
     },
     "noEmit": true
   }

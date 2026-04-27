@@ -76,7 +76,7 @@ model User {
   openId String? @unique // 预留给微信小程序的 openId
 
   avatar String? // 头像
-  sex    Sex     @default(UNKNOWN) // 性别
+  sex    Sex? // 性别
 
   status UserStatus @default(ACTIVE)
 

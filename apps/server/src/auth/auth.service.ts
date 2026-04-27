@@ -15,6 +15,7 @@ import { Token } from './models/token.model';
 import { SecurityConfig } from '../common/configs/config.interface';
 import { SignupInput, LoginInput, UpdatePasswordDto, WechatPhoneLoginInput } from './dto/auth-rest.dto';
 import { ImportUsersDto } from 'src/users/dto/user-rest.dto';
+import { RoleCode } from '@muxi/shared';
 
 @Injectable()
 export class AuthService {
@@ -35,7 +36,7 @@ export class AuthService {
     const { account, password, name } = dto;
     const isPhone = /^1[3-9]\d{9}$/.test(account);
 
-    // 1. 防重校验
+    // 防重校验
     const existingUser = await this.prisma.user.findFirst({
       where: { OR: [{ phone: account }, { account: account }] },
     });
@@ -43,16 +44,16 @@ export class AuthService {
       throw new ConflictException('该手机号或账号已被注册');
     }
 
-    // 2. 获取默认角色 (假设系统中已存在 code 为 STUDENT 的角色)
+    // 获取默认角色 (假设系统中已存在 code 为 STUDENT 的角色)
     // 如果没有这个角色，会抛出错误，防止创建出“无权限孤儿账号”
     const defaultRole = await this.prisma.role.findUnique({
-      where: { code: 'STUDENT' }, 
+      where: { code: RoleCode.USER }, 
     });
 
-    // 3. 密码加密
+    // 密码加密
     const hashedPassword = await this.passwordService.hashPassword(password);
 
-    // 4. 创建用户并关联角色
+    // 创建用户并关联角色
     return this.prisma.user.create({
       data: {
         account: account,
@@ -220,71 +221,6 @@ export class AuthService {
     });
 
     return { message: '密码修改成功' };
-  }
-
-  async importUsers(dto: ImportUsersDto) {
-    const { classId, users } = dto;
-    const defaultPassword = await this.passwordService.hashPassword('abc12345');
-    
-    // 获取默认学生角色
-    const studentRole = await this.prisma.role.findUnique({ where: { code: 'STUDENT' } });
-
-    let successCount = 0;
-    const errors = [];
-
-    // ⚠️ 在生产环境中，建议使用 prisma.$transaction 或分批处理大量数据
-    for (const item of users) {
-      try {
-        // A. 查找或创建用户 (Upsert 逻辑)
-        let user = await this.prisma.user.findUnique({ where: { phone: item.phone } });
-        
-        if (!user) {
-          // 不存在：创建新用户
-          user = await this.prisma.user.create({
-            data: {
-              phone: item.phone,
-              account: item.phone,
-              name: item.name,
-              idCard: item.idCard,
-              password: defaultPassword, // 默认密码
-              roles: studentRole ? { connect: { id: studentRole.id } } : undefined,
-            }
-          });
-        } else {
-          // 已存在：可选更新其姓名和身份证
-          user = await this.prisma.user.update({
-            where: { id: user.id },
-            data: {
-              name: item.name || user.name,
-              idCard: item.idCard || user.idCard
-            }
-          });
-        }
-
-        // B. 绑定机构/班级关联 (如果已在班级中，更新状态为 ACTIVE)
-        await this.prisma.classMember.upsert({
-          where: {
-            classId_userId: { classId, userId: user.id }
-          },
-          update: { status: UserStatus.ACTIVE }, // 恢复激活状态
-          create: {
-            classId,
-            userId: user.id,
-            role: 'STUDENT',
-            status: UserStatus.ACTIVE,
-          }
-        });
-
-        successCount++;
-      } catch (err: any) {
-        errors.push(`手机号 ${item.phone} 处理失败: ${err.message}`);
-      }
-    }
-
-    return {
-      message: `导入完成，成功 ${successCount} 条，失败 ${errors.length} 条`,
-      errors
-    };
   }
 
   /**
