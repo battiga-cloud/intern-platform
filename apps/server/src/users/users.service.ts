@@ -1,99 +1,184 @@
+import { Injectable, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { PasswordService } from '../auth/password.service';
-import { ChangePasswordInput } from './dto/change-password.input';
-import { UpdateProfileDto } from './dto/user-rest.dto';
+import { User } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserQueryDto } from './dto/user-query.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    private prisma: PrismaService,
-    private passwordService: PasswordService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * 更新用户资料
+   * 🛡️ 核心辅助方法：生成数据隔离条件
+   * @param currentUser 当前发请求的登录用户
    */
-  async updateUser(userId: string, dto: UpdateProfileDto) {
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: dto,
-      select: { id: true, name: true, phone: true } // 不返回 password
-    });
+  private buildIsolationWhere(currentUser: User) {
+    const where: any = {};
+    // 如果当前用户是学校管理员，强制加上 schoolId 过滤
+    if (currentUser.schoolId) {
+      where.schoolId = currentUser.schoolId;
+    }
+    // 如果当前用户是企业管理员，强制加上 enterpriseId 过滤
+    if (currentUser.enterpriseId) {
+      where.enterpriseId = currentUser.enterpriseId;
+    }
+    return where;
   }
 
-  async changePassword(
-    userId: string,
-    userPassword: string,
-    changePassword: ChangePasswordInput,
-  ) {
-    const passwordValid = await this.passwordService.validatePassword(
-      changePassword.oldPassword,
-      userPassword,
-    );
-
-    if (!passwordValid) {
-      throw new BadRequestException('Invalid password');
+  /**
+   * 创建用户 (包含越权防御)
+   */
+  async create(dto: CreateUserDto, currentUser: User) {
+    // 1. 越权防御：学校管理员只能创建本校的用户
+    if (currentUser.schoolId) {
+      dto.schoolId = currentUser.schoolId; 
+      dto.enterpriseId = null; // 绝对不允许跨界关联企业
+    } else if (currentUser.enterpriseId) {
+      dto.enterpriseId = currentUser.enterpriseId;
+      dto.schoolId = null;
     }
 
-    const hashedPassword = await this.passwordService.hashPassword(
-      changePassword.newPassword,
-    );
+    // 2. 账号防重校验
+    const existing = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { userName: dto.userName },
+          dto.phone ? { phone: dto.phone } : undefined,
+        ].filter(Boolean) as any,
+      },
+    });
+    if (existing) throw new ConflictException('用户名或手机号已存在');
 
-    return this.prisma.user.update({
+    // 3. 处理密码 (如果没有传密码，默认设为 123456)
+    const rawPassword = dto.password || '123456';
+    const hashedPassword = await bcrypt.hash(rawPassword, 10);
+
+    return this.prisma.user.create({
       data: {
+        ...dto,
         password: hashedPassword,
       },
-      where: { id: userId },
+      select: { id: true, userName: true, name: true } // 不返回敏感的密码信息
     });
   }
 
   /**
-   * 获取用户个人信息及多维组织关系
+   * 分页获取用户列表 (带有条件搜索与数据隔离)
    */
-  async getUserProfile(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        classMemberships: true, // 对应 Schema 中的 classMemberships ClassMember[]
-      }
-    });
+  async findAll(query: UserQueryDto, currentUser: User) {
+    const { page = 1, pageSize = 10, userName, name } = query;
+    const skip = (page - 1) * pageSize;
 
-    if (!user) {
-      throw new NotFoundException('用户不存在');
-    }
-
-    // 剔除敏感信息后返回
-    const { password, ...result } = user;
-    return result;
-  }
-
-  /**
-   * 用户主动加入班级 (Upsert 双向绑定)
-   */
-  async joinClass(userId: string, classId: string) {
-    // 1. 校验班级是否存在
-    const targetClass = await this.prisma.class.findUnique({ where: { id: classId } });
-    if (!targetClass) {
-      throw new NotFoundException('您扫描的班级二维码无效或班级已解散');
-    }
-
-    // 2. 核心：在多对多中间表中写入关系
-    const membership = await this.prisma.classMember.upsert({
-      where: {
-        classId_userId: { classId: classId, userId: userId },
-      },
-      create: {
-        userId,
-        classId,
-        role: 'STUDENT',
-      },
-      update: {}, 
-    });
-
-    return { 
-      message: `成功加入 ${targetClass.name}`, 
-      data: membership 
+    // 组合基础查询条件 + 数据隔离条件
+    const whereCondition: any = {
+      ...this.buildIsolationWhere(currentUser),
+      ...(userName && { userName: { contains: userName, mode: 'insensitive' } }),
+      ...(name && { name: { contains: name, mode: 'insensitive' } }),
     };
-}
+
+    const [total, records] = await this.prisma.$transaction([
+      this.prisma.user.count({ where: whereCondition }),
+      this.prisma.user.findMany({
+        where: whereCondition,
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          roles: { select: { id: true, name: true } },
+          school: { select: { name: true } },
+          enterprise: { select: { name: true } },
+        },
+      }),
+    ]);
+
+    // 过滤掉密码字段
+    const safeRecords = records.map(({ password, ...rest }) => rest);
+
+    return {
+      records: safeRecords,
+      total,
+      page,
+      pageSize,
+    };
+  }
+
+  /**
+   * 获取详情
+   */
+  async findOne(id: string, currentUser: User) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id,
+        ...this.buildIsolationWhere(currentUser), // 越权防御：不能查看别家机构的人
+      },
+      include: {
+        roles: { select: { id: true } },
+      },
+    });
+
+    if (!user) throw new BadRequestException('用户不存在或您无权访问');
+
+    const { password, ...safeUser } = user;
+    return {
+      ...safeUser,
+      roleIds: user.roles.map(r => r.id), // 抹平结构供前端回显
+    };
+  }
+
+  /**
+   * 更新用户
+   */
+  async update(id: string, dto: UpdateUserDto, currentUser: User) {
+    // 确保该用户属于当前机构
+    await this.findOne(id, currentUser); 
+
+    // 如果前端试图修改密码，做哈希处理
+    if (dto.password) {
+      dto.password = await bcrypt.hash(dto.password, 10);
+    }
+
+    // 越权防御：无视前端传来的机构 ID，强制锁死为本机构 (如果不是超管)
+    if (currentUser.schoolId) dto.schoolId = currentUser.schoolId;
+    if (currentUser.enterpriseId) dto.enterpriseId = currentUser.enterpriseId;
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: dto,
+    });
+
+    const { password, ...safeUser } = updatedUser;
+    return safeUser;
+  }
+
+  /**
+   * 删除用户
+   */
+  async remove(id: string, currentUser: User) {
+    await this.findOne(id, currentUser); // 鉴权
+    
+    // 自我保护
+    if (id === currentUser.id) {
+      throw new BadRequestException('不能删除当前登录的账号');
+    }
+
+    return this.prisma.user.delete({ where: { id } });
+  }
+
+  /**
+   * 分配角色
+   */
+  async assignRoles(id: string, roleIds: string[], currentUser: User) {
+    await this.findOne(id, currentUser); // 鉴权
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        roles: {
+          set: roleIds.map(roleId => ({ id: roleId })),
+        },
+      },
+    });
+  }
 }

@@ -1,51 +1,59 @@
 import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body, 
-  Patch,
-  UseGuards 
+  Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards 
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { JoinClassDto, UpdateProfileDto } from './dto/user-rest.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // 引入我们之前写的门卫
-import { User } from '../common/decorators/user.decorator'; // 引入自定义装饰器
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserQueryDto } from './dto/user-query.dto';
+import { AssignRolesDto } from './dto/assign-roles.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { User } from '../common/decorators/user.decorator';
+import { ResponseMessage } from '../common/decorators/response.decorator';
 
-@Controller('users')
-@UseGuards(JwtAuthGuard) // 🔐 整个 users 模块的接口都必须携带 Token 才能访问
+@UseGuards(JwtAuthGuard)
+@Controller('system/users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  /**
-   * 获取当前登录用户的完整资料（包含其加入的所有班级列表）
-   * GET /users/me
-   */
-  @Get('me')
-  async getProfile(@User('id') userId: string) {
-    return this.usersService.getUserProfile(userId);
+  @Post()
+  @ResponseMessage('用户创建成功')
+  create(@Body() dto: CreateUserDto, @User() currentUser: any) {
+    return this.usersService.create(dto, currentUser);
   }
 
-  /**
-   * 扫码/主动加入班级
-   * POST /users/join-class
-   */
-  @Post('join-class')
-  async joinClass(
-    @User('id') userId: string, 
-    @Body() dto: JoinClassDto
-  ) {
-    return this.usersService.joinClass(userId, dto.classId);
+  @Get()
+  findAll(@Query() query: UserQueryDto, @User() currentUser: any) {
+    return this.usersService.findAll(query, currentUser);
   }
 
-  /**
-   * [预留] 修改个人资料 (如姓名)
-   * PATCH /users/profile
-   */
-  @Patch('profile')
-  async updateProfile(
-    @User('id') userId: string,
-    @Body() dto: UpdateProfileDto
+  @Get(':id')
+  findOne(@Param('id') id: string, @User() currentUser: any) {
+    return this.usersService.findOne(id, currentUser);
+  }
+
+  @Patch(':id')
+  @ResponseMessage('用户更新成功')
+  update(
+    @Param('id') id: string, 
+    @Body() dto: UpdateUserDto, 
+    @User() currentUser: any
   ) {
-    return this.usersService.updateUser(userId, dto);
+    return this.usersService.update(id, dto, currentUser);
+  }
+
+  @Delete(':id')
+  @ResponseMessage('用户删除成功')
+  remove(@Param('id') id: string, @User() currentUser: any) {
+    return this.usersService.remove(id, currentUser);
+  }
+
+  @Patch(':id/roles')
+  @ResponseMessage('角色分配成功')
+  assignRoles(
+    @Param('id') id: string,
+    @Body() dto: AssignRolesDto,
+    @User() currentUser: any
+  ) {
+    return this.usersService.assignRoles(id, dto.roleIds, currentUser);
   }
 }
