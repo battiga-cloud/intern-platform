@@ -10,6 +10,12 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { User } from '../common/decorators/user.decorator';
 import { ResponseMessage } from '../common/decorators/response.decorator';
 import { ImportUsersDto, UpdateStatusDto } from './dto/user-rest.dto';
+import { Prisma } from '@prisma/client';
+
+// 🔴  定义一个包含了 roles 关系的新类型
+type UserWithRoles = Prisma.UserGetPayload<{
+  include: { roles: true }
+}>;
 
 @UseGuards(JwtAuthGuard)
 @Controller('system/users')
@@ -18,17 +24,17 @@ export class UsersController {
 
   @Post()
   @ResponseMessage('用户创建成功')
-  create(@Body() dto: CreateUserDto, @User() currentUser: any) {
+  create(@Body() dto: CreateUserDto, @User() currentUser: UserWithRoles) {
     return this.usersService.create(dto, currentUser);
   }
 
   @Get()
-  findAll(@Query() query: UserQueryDto, @User() currentUser: any) {
+  findAll(@Query() query: UserQueryDto, @User() currentUser: UserWithRoles) {
     return this.usersService.findAll(query, currentUser);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @User() currentUser: any) {
+  findOne(@Param('id') id: string, @User() currentUser: UserWithRoles) {
     return this.usersService.findOne(id, currentUser);
   }
 
@@ -37,14 +43,14 @@ export class UsersController {
   update(
     @Param('id') id: string, 
     @Body() dto: UpdateUserDto, 
-    @User() currentUser: any
+    @User() currentUser: UserWithRoles
   ) {
     return this.usersService.update(id, dto, currentUser);
   }
 
   @Delete(':id')
   @ResponseMessage('用户删除成功')
-  remove(@Param('id') id: string, @User() currentUser: any) {
+  remove(@Param('id') id: string, @User() currentUser: UserWithRoles) {
     return this.usersService.remove(id, currentUser);
   }
 
@@ -53,15 +59,15 @@ export class UsersController {
   assignRoles(
     @Param('id') id: string,
     @Body() dto: AssignRolesDto,
-    @User() currentUser: any
+    @User() currentUser: UserWithRoles
   ) {
     return this.usersService.assignRoles(id, dto.roleIds, currentUser);
   }
 
   @Post('import')
   @ResponseMessage('批量导入处理完成')
-  async importUsers(@Body() dto: ImportUsersDto) {
-    return this.usersService.importUsers(dto);
+  async importUsers(@Body() dto: ImportUsersDto, @User() currentUser: UserWithRoles) {
+    return this.usersService.importUsers(dto, currentUser);
   }
 
   @Patch(':id/reset-password')

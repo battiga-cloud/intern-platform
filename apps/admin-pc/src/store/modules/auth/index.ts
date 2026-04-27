@@ -23,7 +23,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
   const userInfo: Api.Auth.UserInfo = reactive({
     id: '',
-    userName: '',
+    account: '',
     roles: [],
     buttons: []
   });
@@ -92,14 +92,14 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   /**
    * Login
    *
-   * @param userName User name
+   * @param account User name
    * @param password Password
    * @param [redirect=true] Whether to redirect after login. Default is `true`
    */
-  async function login(userName: string, password: string, redirect = true) {
+  async function login(account: string, password: string, redirect = true) {
     startLoading();
 
-    const { data: loginToken, error } = await fetchLogin(userName, password);
+    const { data: loginToken, error } = await fetchLogin(account, password);
     console.log('loginToken', loginToken, error);
 
     if (!error) {
@@ -118,7 +118,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
         window.$notification?.success({
           title: $t('page.login.common.loginSuccess'),
-          content: $t('page.login.common.welcomeBack', { userName: userInfo.userName }),
+          content: $t('page.login.common.welcomeBack', { account: userInfo.account }),
           duration: 4500
         });
       }

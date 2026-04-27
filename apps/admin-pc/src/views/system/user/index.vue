@@ -21,10 +21,10 @@
       </n-form>
     </n-card>
 
-    <n-card title="学员列表" :bordered="false" class="shadow-sm">
+    <n-card title="用户列表" :bordered="false" class="shadow-sm">
       <template #header-extra>
         <n-space>
-          <n-button type="primary" @click="openAddModal">新增学员</n-button>
+          <n-button type="primary" @click="openAddModal">新增用户</n-button>
           <n-button type="info" @click="openImportModal">Excel 批量导入</n-button>
         </n-space>
       </template>
@@ -183,8 +183,7 @@ async function fetchData() {
     const params = {
       page: pagination.page,
       pageSize: pagination.pageSize,
-      userName: searchParams.keyword, // 可以将 keyword 映射到 userName 或 phone
-      name: searchParams.keyword,
+      account: searchParams.keyword, // 可以将 keyword 映射到 account 或 phone
     };
 
     const { data } = await fetchUserList(params);

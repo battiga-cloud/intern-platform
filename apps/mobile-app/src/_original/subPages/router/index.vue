@@ -13,7 +13,7 @@ const route = useRoute()
 // 表单数据
 const userId = ref('eduardo')
 const searchKeyword = ref('vue')
-const userName = ref('小星星')
+const account = ref('小星星')
 const userLabel = ref('小熊熊')
 
 // 基础导航方法
@@ -65,7 +65,7 @@ function pushWithQuery() {
 // 传递对象参数
 function pushWithObjectParams() {
   const user = {
-    name: userName.value,
+    name: account.value,
     label: userLabel.value,
   }
   // 命名路由传递对象参数
@@ -78,7 +78,7 @@ function pushWithObjectParams() {
 
 function pushWithObjectQuery() {
   const user = {
-    name: userName.value,
+    name: account.value,
     label: userLabel.value,
   }
   // path+query传递对象参数
@@ -403,7 +403,7 @@ function handleNavigate(url: string) {
             URL有长度限制，复杂对象需要使用 encodeURIComponent 编码
           </view>
           <view class="grid grid-cols-2 mb-3 gap-2">
-            <wd-input v-model="userName" placeholder="姓名" />
+            <wd-input v-model="account" placeholder="姓名" />
             <wd-input v-model="userLabel" placeholder="标签" />
           </view>
           <view class="grid grid-cols-2 gap-2">

@@ -87,33 +87,14 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
-        name: 'system_school',
-        path: '/system/school',
-        component: 'view.system_school',
-        meta: {
-          title: 'system_school',
-          i18nKey: 'route.system_school',
-          icon: 'ion:school-sharp'
-        }
-      },
-      {
         name: 'system_class',
         path: '/system/class',
         component: 'view.system_class',
         meta: {
           title: 'system_class',
           i18nKey: 'route.system_class',
-          icon: 'mdi:google-classroom'
-        }
-      },
-      {
-        name: 'system_user',
-        path: '/system/user',
-        component: 'view.system_user',
-        meta: {
-          title: '用户管理',
-          i18nKey: 'route.system_user',
-          icon: 'hugeicons:user-ai'
+          icon: 'mdi:google-classroom',
+          order: 2
         }
       },
       {
@@ -123,7 +104,8 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: '菜单管理',
           i18nKey: 'route.system_menu',
-          icon: 'line-md:menu-unfold-right'
+          icon: 'line-md:menu-unfold-right',
+          order: 4
         }
       },
       {
@@ -133,7 +115,30 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: '角色管理',
           i18nKey: 'route.system_role',
-          icon: 'mdi:user-group'
+          icon: 'mdi:user-group',
+          order: 5
+        }
+      },
+      {
+        name: 'system_school',
+        path: '/system/school',
+        component: 'view.system_school',
+        meta: {
+          title: 'system_school',
+          i18nKey: 'route.system_school',
+          icon: 'ion:school-sharp',
+          order: 1
+        }
+      },
+      {
+        name: 'system_user',
+        path: '/system/user',
+        component: 'view.system_user',
+        meta: {
+          title: '用户管理',
+          i18nKey: 'route.system_user',
+          icon: 'hugeicons:user-ai',
+          order: 3
         }
       }
     ]

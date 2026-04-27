@@ -37,7 +37,7 @@ export class AuthService {
 
     // 1. 防重校验
     const existingUser = await this.prisma.user.findFirst({
-      where: { OR: [{ phone: account }, { userName: account }] },
+      where: { OR: [{ phone: account }, { account: account }] },
     });
     if (existingUser) {
       throw new ConflictException('该手机号或账号已被注册');
@@ -55,7 +55,7 @@ export class AuthService {
     // 4. 创建用户并关联角色
     return this.prisma.user.create({
       data: {
-        userName: account,
+        account: account,
         phone: isPhone ? account : null,
         password: hashedPassword,
         name: name || (isPhone ? `学生_${account.slice(-4)}` : account),
@@ -76,7 +76,7 @@ export class AuthService {
     // 1. 查找用户 (关联角色用于后续 Token 签发，如果载荷需要角色名的话)
     const user = await this.prisma.user.findFirst({
       where: {
-        OR: [{ phone: account }, { userName: account }],
+        OR: [{ phone: account }, { account: account }],
       },
     });
 
@@ -157,7 +157,7 @@ export class AuthService {
         user = await this.prisma.user.create({
           data: {
             phone: purePhoneNumber,
-            userName: `wx_${purePhoneNumber}`, // 自动分配一个 userName
+            account: purePhoneNumber, // 自动分配一个 account
             password: hashedPassword,
             name: `微信用户_${purePhoneNumber.slice(-4)}`,
             openId: openId, // 绑定 openId
@@ -190,7 +190,7 @@ export class AuthService {
   async validateUser(account: string, pass: string): Promise<any> {
     const user = await this.prisma.user.findFirst({
       where: {
-        OR: [{ phone: account }, { userName: account }],
+        OR: [{ phone: account }, { account: account }],
       },
     });
 
@@ -243,7 +243,7 @@ export class AuthService {
           user = await this.prisma.user.create({
             data: {
               phone: item.phone,
-              userName: `stu_${item.phone}`,
+              account: item.phone,
               name: item.name,
               idCard: item.idCard,
               password: defaultPassword, // 默认密码

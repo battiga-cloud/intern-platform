@@ -484,7 +484,7 @@ declare namespace App {
         login: {
           common: {
             loginOrRegister: string;
-            userNamePlaceholder: string;
+            accountPlaceholder: string;
             phonePlaceholder: string;
             codePlaceholder: string;
             passwordPlaceholder: string;
@@ -558,7 +558,7 @@ declare namespace App {
       };
       form: {
         required: string;
-        userName: FormMsg;
+        account: FormMsg;
         phone: FormMsg;
         pwd: FormMsg;
         confirmPwd: FormMsg;

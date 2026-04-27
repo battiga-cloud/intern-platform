@@ -5,7 +5,7 @@
 Table User {
   id String [pk]
   phone String [unique]
-  userName String [unique, not null]
+  account String [unique, not null]
   password String [not null]
   name String
   idCard String [unique]

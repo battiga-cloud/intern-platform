@@ -76,7 +76,7 @@ export class UsersService {
     const existing = await this.prisma.user.findFirst({
       where: {
         OR: [
-          { userName: dto.userName },
+          { account: dto.account },
           dto.phone ? { phone: dto.phone } : undefined,
         ].filter(Boolean) as any,
       },
@@ -92,7 +92,7 @@ export class UsersService {
         ...dto,
         password: hashedPassword,
       },
-      select: { id: true, userName: true, name: true } // 不返回敏感的密码信息
+      select: { id: true, account: true, name: true } // 不返回敏感的密码信息
     });
   }
 
@@ -114,7 +114,7 @@ export class UsersService {
       user = await this.prisma.user.create({
         data: {
           phone: dto.phone,
-          userName: `u_${dto.phone}`,
+          account: dto.phone,
           name: dto.name,
           idCard: dto.idCard,
           password: defaultPassword,

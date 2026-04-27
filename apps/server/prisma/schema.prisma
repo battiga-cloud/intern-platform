@@ -66,7 +66,7 @@ model User {
 
   // --- 身份与登录凭证 (Credentials) ---
   phone    String? @unique // 手机号（可选，但一旦有必须唯一）
-  userName String  @unique // 登录账号（必填且唯一，如 admin123）
+  account  String  @unique // 登录账号（必填且唯一，如 admin123）
   password String // 哈希加密后的密码
 
   // --- 用户资料 (Profile) ---
