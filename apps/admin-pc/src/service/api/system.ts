@@ -53,3 +53,34 @@ export function updateUser(id: string, data: any) {
     data
   });
 }
+
+// ================= 学校管理 =================
+export function fetchSchoolList(params?: any) {
+  return request<any>({ url: '/system/schools', method: 'get', params });
+}
+export function createSchool(data: any) {
+  return request<any>({ url: '/system/schools', method: 'post', data });
+}
+export function updateSchool(id: string, data: any) {
+  return request<any>({ url: `/system/schools/${id}`, method: 'patch', data });
+}
+export function updateSchoolStatus(id: string, status: string) {
+  return request<any>({ url: `/system/schools/${id}/status`, method: 'patch', data: { status } });
+}
+export function deleteSchool(id: string) {
+  return request<any>({ url: `/system/schools/${id}`, method: 'delete' });
+}
+
+// ================= 班级管理 =================
+export function fetchClassList(params?: any) {
+  return request<any>({ url: '/system/classes', method: 'get', params });
+}
+export function createClass(data: any) {
+  return request<any>({ url: '/system/classes', method: 'post', data });
+}
+export function updateClass(id: string, data: any) {
+  return request<any>({ url: `/system/classes/${id}`, method: 'patch', data });
+}
+export function deleteClass(id: string) {
+  return request<any>({ url: `/system/classes/${id}`, method: 'delete' });
+}

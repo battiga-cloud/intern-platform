@@ -85,6 +85,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
+        name: 'system_class',
+        path: '/system/class',
+        component: 'view.system_class',
+        meta: {
+          title: 'system_class',
+          i18nKey: 'route.system_class'
+        }
+      },
+      {
         name: 'system_menu',
         path: '/system/menu',
         component: 'view.system_menu',
@@ -100,6 +109,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: '角色管理',
           i18nKey: 'route.system_role'
+        }
+      },
+      {
+        name: 'system_school',
+        path: '/system/school',
+        component: 'view.system_school',
+        meta: {
+          title: 'system_school',
+          i18nKey: 'route.system_school'
         }
       },
       {

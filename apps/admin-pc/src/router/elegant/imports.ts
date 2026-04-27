@@ -21,8 +21,10 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "iframe-page": () => import("@/views/_builtin/iframe-page/[url].vue"),
   login: () => import("@/views/_builtin/login/index.vue"),
   home: () => import("@/views/home/index.vue"),
+  system_class: () => import("@/views/system/class/index.vue"),
   system: () => import("@/views/system/index.vue"),
   system_menu: () => import("@/views/system/menu/index.vue"),
   system_role: () => import("@/views/system/role/index.vue"),
+  system_school: () => import("@/views/system/school/index.vue"),
   system_user: () => import("@/views/system/user/index.vue"),
 };

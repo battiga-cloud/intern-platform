@@ -171,9 +171,12 @@ model Enterprise {
 model School {
   id          String  @id @default(cuid())
   name        String  @unique
-  logo        String?
-  description String? @db.Text
-  status      Boolean @default(true)
+  logo        String? // 学校LOGO
+  description String? // 简介
+  address     String? // 地址
+  contactName String? // 负责人姓名
+  phone       String? // 负责人电话
+  status      String  @default("ACTIVE") // ACTIVE, INACTIVE
 
   users         User[]
   classes       Class[]
@@ -182,6 +185,26 @@ model School {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   evaluations Evaluation[] // 本校学生在各企业收到的评价汇总
+}
+
+// 班级管理
+model Class {
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  name        String // 例如 "机电3班"
+  year        Int? // 届别，如 2026
+  status      String  @default("ACTIVE")
+  description String?
+  grade       String? // 👈 确保这行存在 (年级)
+
+  classMemberships ClassMember[] // 👈 确保这里是 classMemberships
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, schoolId]) // 同一学校内班级名不能重复
 }
 
 // ==========================================
@@ -199,21 +222,6 @@ model JobPost {
   city        String?
   salaryRange String? // 薪资范围，如 "100-150/天"
   isActive    Boolean @default(true) // 是否正在招聘
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// 班级管理
-model Class {
-  id       String @id @default(cuid())
-  schoolId String
-  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-
-  name String // 例如 "机电3班"
-  year Int? // 届别，如 2026
-
-  members ClassMember[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
