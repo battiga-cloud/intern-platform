@@ -1,5 +1,6 @@
 import { 
-  IsNotEmpty, IsString, IsOptional, IsInt, IsBoolean, IsEnum 
+  IsNotEmpty, IsString, IsOptional, IsInt, IsBoolean, IsEnum, 
+  IsArray
 } from 'class-validator';
 import { MenuType } from '@prisma/client'; // 引入 Prisma 生成的枚举
 import { ApiProperty } from '@nestjs/swagger';
@@ -10,9 +11,21 @@ export class CreateMenuDto {
   @IsString()
   title: string;
 
-  @ApiProperty({ description: '菜单类型' })
-  @IsEnum(MenuType, { message: '菜单类型不合法' })
+  // 🔴 补充的路由名称，用于前端菜单渲染
+  @ApiProperty({ description: '路由名称' })
+  @IsNotEmpty({ message: '路由名称不能为空' })
+  @IsString()
+  name: string;
+
+  @ApiProperty({ enum: MenuType, description: '菜单类型' })
+  @IsEnum(MenuType)
   type: MenuType; // DIRECTORY (目录), MENU (菜单), BUTTON (按钮/权限)
+
+  @ApiProperty({ description: '关联的角色 ID 列表' })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true }) 
+  roleIds?: string[]; // 🔴 接收前端传来的角色 ID 数组
 
   @ApiProperty({ description: '父级菜单 ID' })
   @IsOptional()

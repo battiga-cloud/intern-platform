@@ -6,7 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
 import { CreateSingleUserDto, ImportUsersDto } from './dto/user-rest.dto';
-import { RoleCode } from '../common/enums/role.enum';
+import { RoleCode } from '@muxi/shared';
 
 // 🔴  定义一个包含了 roles 关系的新类型
 type UserWithRoles = Prisma.UserGetPayload<{

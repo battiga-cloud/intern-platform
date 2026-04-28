@@ -153,7 +153,7 @@ import * as xlsx from 'xlsx';
 
 // 引入全局状态与枚举
 import { useAuthStore } from '@/store/modules/auth';
-import { RoleCodeEnum } from '@/enum';
+import { RoleCode } from '@muxi/shared';
 
 // 引入 API (需确保你在 api/system.ts 中已经暴露了这些方法)
 import {
@@ -175,7 +175,7 @@ const authStore = useAuthStore();
 const isPlatformAdmin = computed(() => {
   console.log('authStore',authStore.userInfo)
   return authStore.userInfo.roles.some((role) =>
-    [RoleCodeEnum.SUPER_ADMIN, RoleCodeEnum.PLATFORM_ADMIN].includes(role)
+    [RoleCode.SUPER_ADMIN, RoleCode.PLATFORM_ADMIN].includes(role)
   );
 });
 

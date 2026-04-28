@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { CreateClassDto, UpdateClassDto, ClassQueryDto } from './dto/class.dto';
-import { RoleCode } from '../common/enums/role.enum';
+import { RoleCode } from '@muxi/shared';
 
 @Injectable()
 export class ClassesService {

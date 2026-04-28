@@ -1,5 +1,5 @@
-import { 
-  Injectable, BadRequestException, ConflictException 
+import {
+  Injectable, BadRequestException, ConflictException
 } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { CreateMenuDto } from './dto/create-menu.dto';
@@ -7,33 +7,49 @@ import { UpdateMenuDto } from './dto/update-menu.dto';
 
 @Injectable()
 export class MenusService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   /**
    * 创建菜单
    */
   async create(dto: CreateMenuDto) {
-    // 如果传了 parentId，校验父级是否存在
-    if (dto.parentId) {
+    // 剥离出关联表字段 roleIds，剩下 restData 都是 Menu 表的原生物理字段
+    const { roleIds, ...restData } = dto;
+
+    if (restData.parentId) {
       const parent = await this.prisma.menu.findUnique({
-        where: { id: dto.parentId },
+        where: { id: restData.parentId },
       });
       if (!parent) throw new BadRequestException('指定的父级菜单不存在');
     }
 
-    return this.prisma.menu.create({ data: dto });
+    // 明确地组装 data
+    return this.prisma.menu.create({
+      data: {
+        ...restData, // 展开所有原生字段 (parentId, name, title, path 等)
+
+        // 处理多对多关系：把字符串数组转换为 Prisma 的 connect 对象
+        roles: roleIds && roleIds.length > 0
+          ? { connect: roleIds.map(id => ({ id })) }
+          : undefined,
+      },
+    });
   }
 
   /**
    * 🔴 获取全量菜单并组装成树形结构 (前端菜单渲染/角色分配权限时使用)
    */
   async findTree() {
-    // 1. 一次性查出所有菜单，按 sort 升序排序
+    // 一次性查出所有菜单，按 sort 升序排序
     const allMenus = await this.prisma.menu.findMany({
       orderBy: { sort: 'asc' },
+      // 🔴 必须 include 出 roles，否则前端编辑时无法回显已勾选的角色
+      include: {
+        roles: { select: { id: true, code: true, name: true } }
+      }
     });
 
-    // 2. 将扁平数组转换为树形结构
+    // 将扁平数组转换为树形结构
     return this.buildTree(allMenus, null);
   }
 
@@ -50,14 +66,16 @@ export class MenusService {
    * 更新菜单
    */
   async update(id: string, dto: UpdateMenuDto) {
-    // 🔴 死循环防御：父节点不能是自己
-    if (dto.parentId === id) {
+    const { roleIds, ...restData } = dto;
+
+    // 死循环防御：父节点不能是自己
+    if (restData.parentId === id) {
       throw new BadRequestException('父级菜单不能设置为自己');
     }
 
-    // 🔴 高级防御：父节点不能是自己的子孙节点
-    if (dto.parentId) {
-      const isDescendant = await this.checkIsDescendant(id, dto.parentId);
+    // 高级防御：父节点不能是自己的子孙节点
+    if (restData.parentId) {
+      const isDescendant = await this.checkIsDescendant(id, restData.parentId);
       if (isDescendant) {
         throw new BadRequestException('父级菜单不能设置为当前菜单的子节点');
       }
@@ -65,7 +83,14 @@ export class MenusService {
 
     return this.prisma.menu.update({
       where: { id },
-      data: dto,
+      data: {
+        ...restData,
+
+        // 使用 set 语法覆盖更新角色的关联
+        roles: roleIds
+          ? { set: roleIds.map(rId => ({ id: rId })) }
+          : undefined,
+      },
     });
   }
 

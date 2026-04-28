@@ -188,7 +188,8 @@ model Menu {
   parent   Menu?   @relation("MenuHierarchy", fields: [parentId], references: [id])
   children Menu[]  @relation("MenuHierarchy")
 
-  title      String // 菜单名称
+  name       String   @unique // 🔴 新增：路由名称 (如 SystemUser)，前端必须且唯一
+  title      String // 菜单名称 (如 用户管理)
   type       MenuType @default(MENU)
   path       String? // 路由地址
   component  String? // 组件路径

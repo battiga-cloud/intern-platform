@@ -101,6 +101,7 @@ Table Menu {
   parentId String
   parent Menu
   children Menu [not null]
+  name String [unique, not null]
   title String [not null]
   type MenuType [not null, default: 'MENU']
   path String

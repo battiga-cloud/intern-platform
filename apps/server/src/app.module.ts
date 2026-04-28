@@ -16,6 +16,8 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GqlConfigService } from './gql-config.service';
 import { SchoolsModule } from './schools/schools.module';
 import { ClassesModule } from './classes/classes.module';
+import { MenusModule } from './menus/menus.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { ClassesModule } from './classes/classes.module';
     AttendanceModule,
     SchoolsModule,
     ClassesModule,
+    MenusModule,
+    RolesModule,
   ],
   controllers: [AppController],
   providers: [
