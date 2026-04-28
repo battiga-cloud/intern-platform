@@ -37,12 +37,15 @@ Table User {
 Table School {
   id String [pk]
   name String [unique, not null]
+  shortName String
   logo String
   description String
   address String
   contactName String
   phone String
   status String [not null, default: 'ACTIVE']
+  promoContent String
+  promoUrl String
   admins User [not null]
   classes Class [not null]
   announcements Announcement [not null]
@@ -125,6 +128,9 @@ Table Enterprise {
   contactWechat String
   contactQrCode String
   status Boolean [not null, default: true]
+  promoType PromoType [not null, default: 'RICH_TEXT']
+  promoContent String
+  promoUrl String
   users User [not null]
   jobPosts JobPost [not null]
   createdAt DateTime [default: `now()`, not null]
@@ -315,6 +321,11 @@ Enum TaskStatus {
   IN_PROGRESS
   COMPLETED
   OVERDUE
+}
+
+Enum PromoType {
+  RICH_TEXT
+  EXTERNAL_LINK
 }
 
 Ref: User.manageSchoolId > School.id

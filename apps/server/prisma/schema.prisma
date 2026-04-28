@@ -114,12 +114,17 @@ model User {
 model School {
   id          String  @id @default(cuid())
   name        String  @unique
+  shortName   String? // 🔴 新增：学校简称 (如 "东理工")
   logo        String? // 学校LOGO
   description String? // 简介
   address     String? // 地址
   contactName String? // 负责人姓名
   phone       String? // 负责人电话
   status      String  @default("ACTIVE") // ACTIVE, INACTIVE
+
+  // --- 🔴 新增：招聘/宣传相关字段 ---
+  promoContent String? @db.Text // 富文本宣传内容
+  promoUrl     String?          // 外部 H5 宣传链接
 
   admins        User[]         @relation("SchoolAdmins") // 关联管理该学校的 User
   classes       Class[]
@@ -208,6 +213,11 @@ model Menu {
 // 3. 机构域：企业与学校信息 (Organizations)
 // ==========================================
 
+enum PromoType {
+  RICH_TEXT // 富文本展示
+  EXTERNAL_LINK // 外部H5链接
+}
+
 model Enterprise {
   id          String  @id @default(cuid())
   name        String  @unique // 企业名称
@@ -221,6 +231,11 @@ model Enterprise {
   contactQrCode String? // 微信二维码图片地址
 
   status Boolean @default(true) // 启用/禁用状态
+
+  // --- 招聘宣传核心字段 ---
+  promoType    PromoType @default(RICH_TEXT)
+  promoContent String?   @db.Text // 存储富文本 HTML
+  promoUrl     String? // 存储外部 H5 链接 (如易企秀、企业官网)
 
   users    User[]
   jobPosts JobPost[]

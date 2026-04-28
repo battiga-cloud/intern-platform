@@ -1,7 +1,3 @@
-type CommonStatus = 'ACTIVE' | 'INACTIVE';
-type ClassMemberStatus = 'PENDING' | 'ACTIVE' | 'REJECTED';
-type Sex = 'MALE' | 'FEMALE' | 'UNKNOWN';
-
 declare namespace Api {
   namespace System {
     // ==========================================
@@ -10,19 +6,22 @@ declare namespace Api {
     interface School {
       id: string;
       name: string;
+      shortName?: string;
       logo?: string;
       description?: string;
+      promoContent?: string;
+      promoUrl?: string;
       address?: string;
       contactName?: string;
       phone?: string;
-      status: CommonStatus;
+      status: Api.Common.CommonStatus;
       createdAt: string;
       updatedAt: string;
     }
 
     interface SchoolQueryDto {
       name?: string;
-      status?: CommonStatus;
+      status?: Api.Common.CommonStatus;
     }
 
     interface CreateSchoolDto {
@@ -47,7 +46,7 @@ declare namespace Api {
       year?: number;   // 如 2026
       grade?: string;  // 如 "大一", "2024级"
       description?: string;
-      status: CommonStatus;
+      status: Api.Common.CommonStatus;
       createdAt: string;
     }
 
@@ -71,7 +70,7 @@ declare namespace Api {
       userId: string;
       classId: string;
       role: 'STUDENT' | 'TEACHER';
-      status: ClassMemberStatus;
+      status: Api.Common.ClassMemberStatus;
       class?: Class; // 嵌套的班级详情
       createdAt: string;
     }
@@ -83,8 +82,8 @@ declare namespace Api {
       name?: string;   // 真实姓名
       idCard?: string;
       avatar?: string;
-      sex?: Sex;
-      status: CommonStatus;
+      sex?: Api.Common.Sex;
+      status: Api.Common.CommonStatus;
 
       // 关联信息
       roles: { id: string; code: string; name: string }[]; // 全局角色

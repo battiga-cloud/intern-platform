@@ -31,8 +31,17 @@ export function updateSchool(id: string, data: Api.System.UpdateSchoolDto) {
   });
 }
 
+// 获取某学校管理员的接口
+export function fetchSchoolAdmins(schoolId: string) {
+  return request<Api.System.User[]>({
+    url: `/system/users`,
+    method: 'get',
+    params: { manageSchoolId: schoolId } // 后端需支持按此字段筛选
+  });
+}
+
 /** 更新学校状态 */
-export function updateSchoolStatus(id: string, status: Api.System.CommonStatus) {
+export function updateSchoolStatus(id: string, status: Api.Common.CommonStatus) {
   return request<Api.System.School>({
     url: `/system/schools/${id}/status`,
     method: 'patch',

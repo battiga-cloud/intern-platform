@@ -46,5 +46,9 @@ declare namespace Api {
       /** record status */
       status: EnableStatus | null;
     } & T;
+
+    type CommonStatus = 'ACTIVE' | 'INACTIVE';
+    type ClassMemberStatus = 'PENDING' | 'ACTIVE' | 'REJECTED';
+    type Sex = 'MALE' | 'FEMALE' | 'UNKNOWN';
   }
 }
